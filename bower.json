@@ -9,6 +9,10 @@
     "package.json",
     "gulpfile.js"
   ],
+  "dependencies": [
+    "jquery": "1.x",
+    "bootstrap": "3.x"
+  ],
   "keywords": [
     "winlet",
     "css",
