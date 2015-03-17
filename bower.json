@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "description": "Client side Javascript engine for winlet applications running on local server",
   "main": "dist/winlet_local_bootstrap.js",
+  "ignore": [
+    ".gitignore",
+    "**/*.md",
+    "package.json",
+    "gulpfile.js"
+  ],
   "keywords": [
     "winlet",
     "css",
