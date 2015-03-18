@@ -17,7 +17,7 @@ gulp.task('default', function() {
   del('dist/**');
   mkdirp('dist');
 
-  gulp.src(['src/winlet_local.js', 'src/winlet_bootstrap.js'])
+  gulp.src(['src/winlet_local.js', 'src/winlet_bootstrap.js', 'src/drag.js'])
     .pipe(uglify())
     .pipe(concat('winlet_local_bootstrap.min.js'))
     .pipe(gulp.dest('dist'));
