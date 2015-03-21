@@ -1,4 +1,4 @@
-AeJSEngine.getDialog = function(wid) {
+WinletJSEngine.getDialog = function(wid) {
 	if (wid != null) {
 		var dlg = $("div#ap_win_" + wid + "_dialog");
 		if (dlg.length == 0) {
@@ -8,17 +8,17 @@ AeJSEngine.getDialog = function(wid) {
 		
 		return dlg;
 	} else {
-		if (AeJSEngine.dlg == null) {
-			AeJSEngine.dlg = $('<div class="modal fade" id="AeDialog" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><h4 class="modal-title">&nbsp;</h4></div><div class="modal-body">Body</div><div class="modal-footer">&nbsp;</div></div></div></div>');
-			$(document.body).append(AeJSEngine.dlg);
+		if (WinletJSEngine.dlg == null) {
+			WinletJSEngine.dlg = $('<div class="modal fade" id="AeDialog" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><h4 class="modal-title">&nbsp;</h4></div><div class="modal-body">Body</div><div class="modal-footer">&nbsp;</div></div></div></div>');
+			$(document.body).append(WinletJSEngine.dlg);
 		}
 		
-		return AeJSEngine.dlg;
+		return WinletJSEngine.dlg;
 	}
 }
 
-AeJSEngine.closeDialog = function(wid) {
-	var dlg = AeJSEngine.getDialog(wid);
+WinletJSEngine.closeDialog = function(wid) {
+	var dlg = WinletJSEngine.getDialog(wid);
 
 	try {
 		if (dlg.hasClass('in')) // http://stackoverflow.com/questions/19674701/can-i-check-if-bootstrap-modal-shown-hidden
@@ -28,23 +28,23 @@ AeJSEngine.closeDialog = function(wid) {
 	dlg.find("div.modal-body").empty();
 };
 
-AeJSEngine.openDialog = function(shared, wid, content, title) {
-	var dlg = AeJSEngine.getDialog(shared ? null : wid);
+WinletJSEngine.openDialog = function(shared, wid, content, title) {
+	var dlg = WinletJSEngine.getDialog(shared ? null : wid);
 
 	var body = dlg.find("div.modal-body"); 
-	var html = $.trim(AeJSEngine.procStyle(AeJSEngine.procWinFunc(content.replace(AeJSEngine.reScriptAll, '')
-			.replace(AeJSEngine.reDialogSetting, ''), wid)));
+	var html = $.trim(WinletJSEngine.procStyle(WinletJSEngine.procWinFunc(content.replace(WinletJSEngine.reScriptAll, '')
+			.replace(WinletJSEngine.reDialogSetting, ''), wid)));
 
 	if (!shared && html == '') {
-		AeJSEngine.closeDialog(wid);
+		WinletJSEngine.closeDialog(wid);
 		return;
 	}
 
 	body.empty().append(html);
 
-	var settings = AeJSEngine.reDialogSetting.exec(content);
+	var settings = WinletJSEngine.reDialogSetting.exec(content);
 	if (settings != null) {
-		settings = JSON.parse(AeJSEngine.procWinFunc(settings[1], wid));
+		settings = JSON.parse(WinletJSEngine.procWinFunc(settings[1], wid));
 		dlg.find("h4.modal-title").empty().append(settings.title);
 
 		var footer = dlg.find("div.modal-footer").empty();
@@ -79,7 +79,7 @@ AeJSEngine.openDialog = function(shared, wid, content, title) {
 				focus = form.find('input[name="' + form.attr("data-winlet-focus") + '"]');
 		});
 
-		AeJSEngine.procScript(wid, content);
+		WinletJSEngine.procScript(wid, content);
 
 		if (focus) {
 			dlg.off('shown.bs.modal').on('shown.bs.modal', function () {
@@ -92,8 +92,8 @@ AeJSEngine.openDialog = function(shared, wid, content, title) {
 	});
 };
 
-AeJSEngine.form.validateSuccess = function(input) {
-	var result = AeJSEngine.form.getInputResult(input);
+WinletJSEngine.form.validateSuccess = function(input) {
+	var result = WinletJSEngine.form.getInputResult(input);
 	if (result != null) {
 		var parents = $(input).parents("div.form-group");
 		if (parents.length > 0)
@@ -101,12 +101,12 @@ AeJSEngine.form.validateSuccess = function(input) {
 	}
 };
 
-AeJSEngine.form.validateError = function() {
-	var original = AeJSEngine.form.validateError;
+WinletJSEngine.form.validateError = function() {
+	var original = WinletJSEngine.form.validateError;
 	return function(input, msg) {
 		original(input, msg);
 
-		var result = AeJSEngine.form.getInputResult(input);
+		var result = WinletJSEngine.form.getInputResult(input);
 		if (result != null) {
 			var parents = $(input).parents("div.form-group");
 			if (parents.length > 0)

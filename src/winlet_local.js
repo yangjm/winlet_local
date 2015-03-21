@@ -106,7 +106,7 @@ jQuery.fn.winform = function() {
 				}
 
 			if ($(this).attr("enctype") == "multipart/form-data") {
-				this.action = this.action + "&" + AeJSEngine.mergeParam(settings.wid, {_pg: window.location.pathname, _purl: window.location.href});
+				this.action = this.action + "&" + WinletJSEngine.mergeParam(settings.wid, {_pg: window.location.pathname, _purl: window.location.href});
 				return true;
 			}
 
@@ -117,9 +117,9 @@ jQuery.fn.winform = function() {
 					if (params[this.name] == undefined)
 						params[this.name] = "";
 				});
-				AeJSEngine.setHash(settings.wid, params);
-				AeJSEngine.loadContent(settings.wid);
-				AeJSEngine.updateWindows(settings.wid, settings.update);
+				WinletJSEngine.setHash(settings.wid, params);
+				WinletJSEngine.loadContent(settings.wid);
+				WinletJSEngine.updateWindows(settings.wid, settings.update);
 				
 				return false;
 			}
@@ -127,7 +127,7 @@ jQuery.fn.winform = function() {
 			// POST的处理
 			try {
 				if (settings.hideloading != 'yes') {
-					AeJSEngine.showLoading('#ap_win_' + settings.wid, settings.dialog);
+					WinletJSEngine.showLoading('#ap_win_' + settings.wid, settings.dialog);
 				}
 			} catch (e) {
 			}
@@ -147,9 +147,9 @@ jQuery.fn.winform = function() {
 			$.ajax({
 				  type: 'POST',
 				  url: this.action,
-				  data: AeJSEngine.mergeParam(settings.wid, $.deparam($(this).serialize()), {_x: 'y', _v: settings.validate, _ff: fields, _fd: disabled, _pg: window.location.pathname, _purl: window.location.href}),
-				  success: AeJSEngine.getActionResponseHandler(settings.wid, this, this.aftersubmit),
-				  error: AeJSEngine.getErrorHandler(settings.wid),
+				  data: WinletJSEngine.mergeParam(settings.wid, $.deparam($(this).serialize()), {_x: 'y', _v: settings.validate, _ff: fields, _fd: disabled, _pg: window.location.pathname, _purl: window.location.href}),
+				  success: WinletJSEngine.getActionResponseHandler(settings.wid, this, this.aftersubmit),
+				  error: WinletJSEngine.getErrorHandler(settings.wid),
 				  dataType: "text"
 				});
 
@@ -160,7 +160,7 @@ jQuery.fn.winform = function() {
 			if (name == undefined)
 				name = input.name;
 
-			AeJSEngine.form.validating(input);
+			WinletJSEngine.form.validating(input);
 
 			var val = value;
 			
@@ -176,8 +176,8 @@ jQuery.fn.winform = function() {
 			$.ajax({
 				  type: 'POST',
 				  url: this.action,
-				  data: AeJSEngine.mergeParam(settings.wid, param, {_x: 'y', _pg: window.location.pathname, _purl: window.location.href}),
-				  success: AeJSEngine.form.getValidateResponseHandler(input.form, name, input),
+				  data: WinletJSEngine.mergeParam(settings.wid, param, {_x: 'y', _pg: window.location.pathname, _purl: window.location.href}),
+				  success: WinletJSEngine.form.getValidateResponseHandler(input.form, name, input),
 				  dataType: "json"
 				});
 		};
@@ -213,9 +213,9 @@ jQuery.fn.winform = function() {
 
 					if ($this.attr("tips") != undefined) {
 						$this.off("blur").off("fucos").focus(function(){
-							AeJSEngine.form.showTip(this);
+							WinletJSEngine.form.showTip(this);
 						}).blur(function(){
-							AeJSEngine.form.hideTip(this);
+							WinletJSEngine.form.hideTip(this);
 						});
 					}
 
@@ -230,7 +230,7 @@ jQuery.fn.winform = function() {
 	});
 };
 
-var AeJSEngine = {
+var WinletJSEngine = {
 	ImgBg: new Image(1,1),
 	ImgLoading: new Image(1,1),
 	ImgValidating: new Image(1,1),
@@ -284,13 +284,13 @@ var AeJSEngine = {
 
 		/**
 		 * 返回的是jQuery对象
-		 * 用AeJSEngine.form不用this是为了重载
+		 * 用WinletJSEngine.form不用this是为了重载
 		 * 
 		 * input: input元素对象
 		 */
 		getInputResult: function(input) {
 			if (input.m_result == null)
-				AeJSEngine.form.createResultHolder(input);
+				WinletJSEngine.form.createResultHolder(input);
 
 			return input.m_result;
 		},
@@ -302,7 +302,7 @@ var AeJSEngine = {
 		},
 
 		validateClear: function(input) {
-			var result = AeJSEngine.form.getInputResult(input);
+			var result = WinletJSEngine.form.getInputResult(input);
 			if (result != null)
 				result.html('');
 		},
@@ -311,13 +311,13 @@ var AeJSEngine = {
 		},
 
 		validateSuccess: function(input) {
-			var result = AeJSEngine.form.getInputResult(input);
+			var result = WinletJSEngine.form.getInputResult(input);
 			if (result != null)
 				result.html('<span class="win_valpassed">&nbsp;</span>');
 		},
 
 		validateError: function(input, msg) {
-			var result = AeJSEngine.form.getInputResult(input);
+			var result = WinletJSEngine.form.getInputResult(input);
 
 			if (result == null)
 				return;
@@ -352,8 +352,8 @@ var AeJSEngine = {
 
 					if (changes[i].type == 'v') { // 校验结果
 						if (changes[i].message != '') {
-							AeJSEngine.form.validateClear(inp);
-							AeJSEngine.form.validateError(inp, changes[i].message);
+							WinletJSEngine.form.validateClear(inp);
+							WinletJSEngine.form.validateError(inp, changes[i].message);
 						}
 					} else {
 						if (changes[i].type == 'u') { // 更新值
@@ -363,12 +363,12 @@ var AeJSEngine = {
 								inp.checked = changes[i].value;
 							else {
 								if (input == inp)
-									AeJSEngine.form.validateSuccess(input);
+									WinletJSEngine.form.validateSuccess(input);
 								$(inp).val(changes[i].value);
 							}
 						} else if (changes[i].type == 'd') {
 							inp.disabled = true;
-							AeJSEngine.form.validateClear(inp);
+							WinletJSEngine.form.validateClear(inp);
 						} else if (changes[i].type == 'e') {
 							inp.disabled = false;
 						} else if (changes[i].type == 'l') { // 更新列表
@@ -385,9 +385,9 @@ var AeJSEngine = {
 
 		getValidateResponseHandler: function(form, name, input) {
 			return function(json) {
-				AeJSEngine.form.validateClear(input);
+				WinletJSEngine.form.validateClear(input);
 
-				AeJSEngine.form.applyChanges(json, form, input);
+				WinletJSEngine.form.applyChanges(json, form, input);
 				
 				if (form.onerror != undefined && input != undefined) {
 					try {
@@ -399,13 +399,13 @@ var AeJSEngine = {
 		},
 		
 		showTip: function(input) {
-			var result = AeJSEngine.form.getInputResult(input);
+			var result = WinletJSEngine.form.getInputResult(input);
 			if (result != null && result.html() == '')
 				result.html('<div class="win_tips">' + $(this).attr('tips') + '</div>');
 		},
 
 		hideTip: function(input) {
-			var result = AeJSEngine.form.getInputResult(input);
+			var result = WinletJSEngine.form.getInputResult(input);
 			if (result != null && result.find("div.win_tips").length > 0)
 				result.html('');
 		}
@@ -451,15 +451,15 @@ var AeJSEngine = {
     },
 
     isRootWinId: function(wid) {
-    	return AeJSEngine.getRootWinId(wid) == wid;
+    	return WinletJSEngine.getRootWinId(wid) == wid;
     },
 
 	getWinSettings: function(wid) {
-		return $('#ap_win_' + AeJSEngine.getRootWinId(wid))[0].settings;
+		return $('#ap_win_' + WinletJSEngine.getRootWinId(wid))[0].settings;
 	},
 
 	getHash: function(wid) {
-		var hashgroup = AeJSEngine.hashGroupByRootWindow[AeJSEngine.getRootWinId(wid)].idx;
+		var hashgroup = WinletJSEngine.hashGroupByRootWindow[WinletJSEngine.getRootWinId(wid)].idx;
 
 		try {
 			return $.param($.deparam(window.location.toString().split('#')[1])[hashgroup], true);
@@ -469,7 +469,7 @@ var AeJSEngine = {
 	},
 
 	setHash: function(wid, hash, toggle) {
-		var hashgroup = AeJSEngine.hashGroupByRootWindow[AeJSEngine.getRootWinId(wid)].idx;
+		var hashgroup = WinletJSEngine.hashGroupByRootWindow[WinletJSEngine.getRootWinId(wid)].idx;
 		var params = null;
 
 		try {
@@ -513,20 +513,23 @@ var AeJSEngine = {
 		    	delete params[hashgroup][property];
 		}
 
-		AeJSEngine.detectHashChange = false;
+		WinletJSEngine.detectHashChange = false;
 		var val = $.param(params);
 		if (val == "")
 			// hash set to empty string cause page scroll up to top, set it to _ to prevent this behavior
 			window.location.hash = "_";
 		else
 			window.location.hash = val;
+		
+		if (WinletJSEngine.analytic)
+			WinletJSEngine.analytic('setHash');
 	},
 
 	// 合并参数，优先级从高到低为：指定的参数、hash参数、get参数
 	mergeParam: function(wid) {
 		var obj = {};
 
-		var settings = AeJSEngine.getWinSettings(wid);
+		var settings = WinletJSEngine.getWinSettings(wid);
 		if (settings.params != null)
 			$.extend(obj, settings.params);
 
@@ -535,7 +538,7 @@ var AeJSEngine = {
 			$.extend(obj, $.deparam(window.location.href.substr(idx + 1)));
 
 		try {
-			$.extend(obj, $.deparam(AeJSEngine.getHash(wid)));
+			$.extend(obj, $.deparam(WinletJSEngine.getHash(wid)));
 		} catch (e) {
 		}
 
@@ -558,10 +561,10 @@ var AeJSEngine = {
 			var top = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 
 			var rect = new ElmRect($id);
-			rect.top -= AeJSEngine.topSpace;
-			rect.bottom += AeJSEngine.bottomSpace;
-			rect.left -= AeJSEngine.leftSpace;
-			rect.right += AeJSEngine.rightSpace;
+			rect.top -= WinletJSEngine.topSpace;
+			rect.bottom += WinletJSEngine.bottomSpace;
+			rect.left -= WinletJSEngine.leftSpace;
+			rect.right += WinletJSEngine.rightSpace;
 
 			var scrollX = 0;
 			if (left + doc.clientWidth <  rect.right)
@@ -589,7 +592,7 @@ var AeJSEngine = {
 
 	showLoading: function(id, dialog) {
 		try {
-			AeJSEngine.clearLoading(id);
+			WinletJSEngine.clearLoading(id);
 
 			var rect = new ElmRect($(id));
 			try {
@@ -603,14 +606,14 @@ var AeJSEngine = {
 				html = "<div id='" + id.substr(1) + "_loading' style='z-index:100000;position:absolute;background-color:#999999;filter:alpha(opacity=30);-moz-opacity:0.3;left:" + rect.left + "px;top:" + rect.top
 					+ "px;width:" + rect.width + "px;height:" + rect.height
 					+ "px'><table width='100%' height='100%' border='0'><tr height='100%'><td align='center' valign='middle'><img src='"
-					+ AeJSEngine.ImgLoading.src
+					+ WinletJSEngine.ImgLoading.src
 					+ "'/></td></tr></table></div>";
 			else
-				html = "<div id='" + id.substr(1) + "_loading' style='z-index:100000;position:absolute;background:url(" + AeJSEngine.ImgBg.src
+				html = "<div id='" + id.substr(1) + "_loading' style='z-index:100000;position:absolute;background:url(" + WinletJSEngine.ImgBg.src
 					+ ");left:" + rect.left + "px;top:" + rect.top
 					+ "px;width:" + rect.width + "px;height:" + rect.height
 					+ "px'><table width='100%' height='100%' border='0'><tr height='100%'><td align='center' valign='middle'><img src='"
-					+ AeJSEngine.ImgLoading.src
+					+ WinletJSEngine.ImgLoading.src
 					+ "'/></td></tr></table></div>";
 			$("body").append(html);
 		} catch (e) {
@@ -618,8 +621,8 @@ var AeJSEngine = {
 	},
 
 	procStyle: function(cont) {
-		var css = cont.match(AeJSEngine.reCSSAll) || [];
-		var cssHref = $.map(css, function(tag) {return (tag.match(AeJSEngine.reCSSHref) || ['', ''])[1];});
+		var css = cont.match(WinletJSEngine.reCSSAll) || [];
+		var cssHref = $.map(css, function(tag) {return (tag.match(WinletJSEngine.reCSSHref) || ['', ''])[1];});
 
 		var elmHead = document.getElementsByTagName("head")[0];
 		var elmLinks = elmHead.getElementsByTagName("link");
@@ -647,28 +650,28 @@ var AeJSEngine = {
 			elmHead.appendChild(newCss);
 			}
 		
-		return cont.replace(AeJSEngine.reCSSAll, '');
+		return cont.replace(WinletJSEngine.reCSSAll, '');
 	},
 
 	procWinFunc: function(cont, wid) {
-		return cont.replace(AeJSEngine.reWinPost, 'win$._post(' + wid + ', ')
-			.replace(AeJSEngine.reWinWid, 'win$._wid(' + wid + ')')
-			.replace(AeJSEngine.reWinAjax, 'win$._ajax(' + wid + ', ')
-			.replace(AeJSEngine.reWinGet, 'win$._get(' + wid + ', ')
-			.replace(AeJSEngine.reWinToggle, 'win$._toggle(' + wid + ', ')
-			.replace(AeJSEngine.reWinUrl, 'win$._url(' + wid + ', ')
-			.replace(AeJSEngine.reWinSubmit, 'win$._submit(' + wid + ', ')
-			.replace(AeJSEngine.reWinAfterSubmit, 'win$._aftersubmit(' + wid + ', ');
+		return cont.replace(WinletJSEngine.reWinPost, 'win$._post(' + wid + ', ')
+			.replace(WinletJSEngine.reWinWid, 'win$._wid(' + wid + ')')
+			.replace(WinletJSEngine.reWinAjax, 'win$._ajax(' + wid + ', ')
+			.replace(WinletJSEngine.reWinGet, 'win$._get(' + wid + ', ')
+			.replace(WinletJSEngine.reWinToggle, 'win$._toggle(' + wid + ', ')
+			.replace(WinletJSEngine.reWinUrl, 'win$._url(' + wid + ', ')
+			.replace(WinletJSEngine.reWinSubmit, 'win$._submit(' + wid + ', ')
+			.replace(WinletJSEngine.reWinAfterSubmit, 'win$._aftersubmit(' + wid + ', ');
 	},
 
      procScript: function(wid, cont) {
-		var scripts = cont.match(AeJSEngine.reScriptAll) || [];
-		var scriptContent = $.map(scripts, function(scriptTag) {return (scriptTag.match(AeJSEngine.reScriptOne) || ['', '', ''])[2];});
-		var scriptDef = $.map(scripts, function(scriptTag) {return (scriptTag.match(AeJSEngine.reScriptOne) || ['', '', ''])[1];});
-		var scriptLanguage = $.map(scriptDef, function(scriptTag) {return (scriptTag.match(AeJSEngine.reScriptLanguage) || ['', ''])[1];});
-		var scriptSrc = $.map(scriptDef, function(scriptTag) {return (scriptTag.match(AeJSEngine.reScriptSrc) || ['', ''])[1];});
-		var scriptType = $.map(scriptDef, function(scriptTag) {return (scriptTag.match(AeJSEngine.reScriptType) || ['', ''])[1];});
-		var scriptCharset = $.map(scriptDef, function(scriptTag) {return (scriptTag.match(AeJSEngine.reScriptCharset) || ['', ''])[1];});
+		var scripts = cont.match(WinletJSEngine.reScriptAll) || [];
+		var scriptContent = $.map(scripts, function(scriptTag) {return (scriptTag.match(WinletJSEngine.reScriptOne) || ['', '', ''])[2];});
+		var scriptDef = $.map(scripts, function(scriptTag) {return (scriptTag.match(WinletJSEngine.reScriptOne) || ['', '', ''])[1];});
+		var scriptLanguage = $.map(scriptDef, function(scriptTag) {return (scriptTag.match(WinletJSEngine.reScriptLanguage) || ['', ''])[1];});
+		var scriptSrc = $.map(scriptDef, function(scriptTag) {return (scriptTag.match(WinletJSEngine.reScriptSrc) || ['', ''])[1];});
+		var scriptType = $.map(scriptDef, function(scriptTag) {return (scriptTag.match(WinletJSEngine.reScriptType) || ['', ''])[1];});
+		var scriptCharset = $.map(scriptDef, function(scriptTag) {return (scriptTag.match(WinletJSEngine.reScriptCharset) || ['', ''])[1];});
 
 		var elmHead = document.getElementsByTagName("head")[0];
 		var elmScripts = elmHead.getElementsByTagName("script");
@@ -716,7 +719,7 @@ var AeJSEngine = {
 		$.when.apply($, ret).done(function() {
 			for (i = 0; i < scriptContent.length; i++)
 				try {
-					eval(AeJSEngine.procWinFunc(scriptContent[i], wid));
+					eval(WinletJSEngine.procWinFunc(scriptContent[i], wid));
 				} catch (e) {
 					alert(e.message);
 					alert(scriptContent[i]);
@@ -725,9 +728,9 @@ var AeJSEngine = {
 	},
 
 	invokeAfterLoad: function() {
-		if (AeJSEngine.afterLoad) {
+		if (WinletJSEngine.afterLoad) {
 			try {
-				AeJSEngine.afterLoad();
+				WinletJSEngine.afterLoad();
 			} catch (e) {
 			}
 		}
@@ -765,29 +768,29 @@ var AeJSEngine = {
 	        var container = $(uid);
 
 	        var dialog = false;
-	        if (AeJSEngine.isRootWinId(wid) && AeJSEngine.getWinSettings(wid).dialog == "yes") {
+	        if (WinletJSEngine.isRootWinId(wid) && WinletJSEngine.getWinSettings(wid).dialog == "yes") {
 	        	dialog = true;
 
-	        	var title = AeJSEngine._utf8_decode(jqXHR.getResponseHeader('X-Winlet-Title'));
-	        	AeJSEngine.openDialog(false, wid, data, title);
+	        	var title = WinletJSEngine._utf8_decode(jqXHR.getResponseHeader('X-Winlet-Title'));
+	        	WinletJSEngine.openDialog(false, wid, data, title);
 	        } else {
 				container.html(
-						AeJSEngine.procStyle(
-								AeJSEngine.procWinFunc(data.replace(AeJSEngine.reScriptAll, ''), wid))
+						WinletJSEngine.procStyle(
+								WinletJSEngine.procWinFunc(data.replace(WinletJSEngine.reScriptAll, ''), wid))
 						);
 				$(function() {
-					AeJSEngine.enableForm(container);
+					WinletJSEngine.enableForm(container);
 				});
 
-				AeJSEngine.procScript(wid, data);
+				WinletJSEngine.procScript(wid, data);
 	        }
 
-			AeJSEngine.invokeAfterLoad();
-			AeJSEngine.clearLoading(uid);
+			WinletJSEngine.invokeAfterLoad();
+			WinletJSEngine.clearLoading(uid);
 			container.trigger("AeWindowLoaded", wid);
 
 			if (!dialog && focus)
-				AeJSEngine.ensureVisible(uid);
+				WinletJSEngine.ensureVisible(uid);
 		};
 	},
 
@@ -797,14 +800,14 @@ var AeJSEngine = {
 		if ($(uid).length == 0)
 			return;
 
-		AeJSEngine.showLoading(uid);
+		WinletJSEngine.showLoading(uid);
 
 		$.ajax({
 			  type: 'POST',
-			  url: AeJSEngine.getWinSettings(wid).url,
-			  data: AeJSEngine.mergeParam(wid, {_x: 'y', _w: wid, _pg: window.location.pathname, _purl: window.location.href, _pr: pageRefresh ? "yes" : "no"}),
-			  success: AeJSEngine.getWindowResponseHandler(wid, focus),
-			  error: AeJSEngine.getErrorHandler(),
+			  url: WinletJSEngine.getWinSettings(wid).url,
+			  data: WinletJSEngine.mergeParam(wid, {_x: 'y', _w: wid, _pg: window.location.pathname, _purl: window.location.href, _pr: pageRefresh ? "yes" : "no"}),
+			  success: WinletJSEngine.getWindowResponseHandler(wid, focus),
+			  error: WinletJSEngine.getErrorHandler(),
 			  dataType: "html"
 			});
 	},
@@ -835,7 +838,7 @@ var AeJSEngine = {
 	        var update = jqXHR.getResponseHeader('X-Winlet-Update');
 			var dialog = jqXHR.getResponseHeader('X-Winlet-Dialog');
 			var cache = jqXHR.getResponseHeader('X-Winlet-Cache');
-			var title = AeJSEngine._utf8_decode(jqXHR.getResponseHeader('X-Winlet-Title'));
+			var title = WinletJSEngine._utf8_decode(jqXHR.getResponseHeader('X-Winlet-Title'));
 			// var msg = jqXHR.getResponseHeader('X-Winlet-Msg');
 
 	        if (redirect != null && redirect != "")
@@ -848,13 +851,13 @@ var AeJSEngine = {
 
 			var uid = '#ap_win_' + wid;
 
-			AeJSEngine.clearLoading(uid);
+			WinletJSEngine.clearLoading(uid);
 
 			// 只有处理表单提交响应时form参数才不为null。如果时直接调用action或者翻译窗口url，form参数都为空
 			if (form != null && dialog != "yes" && data.indexOf("WINLET_FORM_RESP:") == 0) {
 				// 提交表单并且表单校验出错
-				AeJSEngine.form.validateClearAll(form);
-				AeJSEngine.form.applyChanges(data.substr(17), form);
+				WinletJSEngine.form.validateClearAll(form);
+				WinletJSEngine.form.applyChanges(data.substr(17), form);
 
 				if (form.onerror != undefined) {
 					try {
@@ -880,7 +883,7 @@ var AeJSEngine = {
 			}
 
 			if (!(cache == "yes"))
-				AeJSEngine.loadContent(wid);
+				WinletJSEngine.loadContent(wid);
 
 			// Update window
 			while (update != null && update != "") {
@@ -901,13 +904,13 @@ var AeJSEngine = {
 				}
 
 				if (wid != window)
-					AeJSEngine.loadContent(window, focus);
+					WinletJSEngine.loadContent(window, focus);
 			}
 
 			if (dialog == "yes")
-				AeJSEngine.openDialog(true, wid, data, title);
+				WinletJSEngine.openDialog(true, wid, data, title);
 			else
-				AeJSEngine.closeDialog();
+				WinletJSEngine.closeDialog();
 		};
 	},
 
@@ -926,9 +929,9 @@ var AeJSEngine = {
 					focus = true;
 					ud = ud.substring(1);
 				}
-				var updatewid = AeJSEngine.hashGroupByRootWindow[AeJSEngine.getRootWinId(wid)].views[ud];
+				var updatewid = WinletJSEngine.hashGroupByRootWindow[WinletJSEngine.getRootWinId(wid)].views[ud];
 				if (updatewid != null)
-					AeJSEngine.loadContent(updatewid, focus);
+					WinletJSEngine.loadContent(updatewid, focus);
 				else {
 					if (unknown == null)
 						unknown = update[i];
@@ -943,10 +946,10 @@ var AeJSEngine = {
 		if (unknown != null) { // 不是顶级窗口，请求服务端将名称翻译为wid
 			$.ajax({
 				type: 'POST',
-				url: AeJSEngine.getWinSettings(wid).url,
-				data: AeJSEngine.mergeParam(wid, {_x: 'y', _w: wid, _u: unknown, _pg: window.location.pathname, _purl: window.location.href}),
-				success: AeJSEngine.getActionResponseHandler(wid),
-				error: AeJSEngine.getErrorHandler(wid),
+				url: WinletJSEngine.getWinSettings(wid).url,
+				data: WinletJSEngine.mergeParam(wid, {_x: 'y', _w: wid, _u: unknown, _pg: window.location.pathname, _purl: window.location.href}),
+				success: WinletJSEngine.getActionResponseHandler(wid),
+				error: WinletJSEngine.getErrorHandler(wid),
 				dataType: "html"
 			});
 		}
@@ -979,26 +982,27 @@ var AeJSEngine = {
 		// { 借助样式获取图片文件URL
 		$("body").append("<div id='winlet_style_temp' style='display:none'><div class='winlet_background'>1</div><div class='winlet_loading'>2</div><div class='winlet_validating'>3</div></div>");
 		$(function() {
-			AeJSEngine.ImgBg.src = $("#winlet_style_temp .winlet_background").css('background-image').replace(/^url|[\(\)"]/g, ''); 
-			AeJSEngine.ImgLoading.src = $("#winlet_style_temp .winlet_loading").css('background-image').replace(/^url|[\(\)"]/g, ''); 
-			AeJSEngine.ImgValidating.src = $("#winlet_style_temp .winlet_validating").css('background-image').replace(/^url|[\(\)"]/g, '');
-			console.log(AeJSEngine.ImgLoading.src);
+			WinletJSEngine.ImgBg.src = $("#winlet_style_temp .winlet_background").css('background-image').replace(/^url|[\(\)"]/g, ''); 
+			WinletJSEngine.ImgLoading.src = $("#winlet_style_temp .winlet_loading").css('background-image').replace(/^url|[\(\)"]/g, ''); 
+			WinletJSEngine.ImgValidating.src = $("#winlet_style_temp .winlet_validating").css('background-image').replace(/^url|[\(\)"]/g, '');
 			$("#winlet_style_temp").remove();
 		});
 		// }
 
 		if (settings) {
-			if (AeJSEngine.isInt(settings.left))
-				AeJSEngine.leftSpace = settings.left;
-			if (AeJSEngine.isInt(settings.right))
-				AeJSEngine.rightSpace = settings.right;
-			if (AeJSEngine.isInt(settings.top))
-				AeJSEngine.topSpace = settings.top;
-			if (AeJSEngine.isInt(settings.bottom))
-				AeJSEngine.bottomSpace = settings.bottom;
+			if (settings.analytic)
+				WinletJSEngine.analytic = settings.analytic;
+			if (WinletJSEngine.isInt(settings.left))
+				WinletJSEngine.leftSpace = settings.left;
+			if (WinletJSEngine.isInt(settings.right))
+				WinletJSEngine.rightSpace = settings.right;
+			if (WinletJSEngine.isInt(settings.top))
+				WinletJSEngine.topSpace = settings.top;
+			if (WinletJSEngine.isInt(settings.bottom))
+				WinletJSEngine.bottomSpace = settings.bottom;
 		}
 
-		AeJSEngine.isStatic = true;
+		WinletJSEngine.isStatic = true;
 
 		var process = {
 			preload: true,	// true表示处理预加载的winlet，false表示处理非预加载
@@ -1020,17 +1024,17 @@ var AeJSEngine = {
 					return;
 			}
 
-			var match = $(this).data("winlet").match(AeJSEngine.reWinlet);
-			var hashgroup = AeJSEngine.hashGroupsByUri[match[2]];
+			var match = $(this).data("winlet").match(WinletJSEngine.reWinlet);
+			var hashgroup = WinletJSEngine.hashGroupsByUri[match[2]];
 			if (hashgroup == null) {
 				hashgroup = {
 						"idx": idx,
 						views: {}};
-				AeJSEngine.hashGroupsByUri[match[2]] = hashgroup;
+				WinletJSEngine.hashGroupsByUri[match[2]] = hashgroup;
 			}
 
 			hashgroup.views[match[3]] = wid;
-			AeJSEngine.hashGroupByRootWindow[wid] = hashgroup;
+			WinletJSEngine.hashGroupByRootWindow[wid] = hashgroup;
 
 			var winDiv = $(this).children("div#ap_win_" + wid);
 			if (winDiv.length == 0) {
@@ -1045,7 +1049,7 @@ var AeJSEngine = {
 				var i;
 
 				for (i = 0; i < params.length; i++) {
-					var pmatch = params[i].match(AeJSEngine.reWinletParam);
+					var pmatch = params[i].match(WinletJSEngine.reWinletParam);
 					winDiv[0].settings[pmatch[1]] = pmatch[2];
 				}
 			}
@@ -1055,12 +1059,12 @@ var AeJSEngine = {
 			if (process.preload) {
 				// 预加载winlet内容中可能会包含对其他winlet的客户端引用，因此需要先把
 				// 预加载的winlet处理完毕后再处理非预加载的winlet
-				winDiv.html(AeJSEngine.procWinFunc(winDiv.html()));
+				winDiv.html(WinletJSEngine.procWinFunc(winDiv.html()));
 				$(function() {
-					AeJSEngine.enableForm(winDiv);
+					WinletJSEngine.enableForm(winDiv);
 				});
 			} else {
-				AeJSEngine.loadContent(wid, false, true);
+				WinletJSEngine.loadContent(wid, false, true);
 			}
 		};
 
@@ -1110,7 +1114,7 @@ var win$ = {
 
 		if (typeof action == "object") {
 			if (action.hash != null)
-				AeJSEngine.setHash(wid, action.hash);
+				WinletJSEngine.setHash(wid, action.hash);
 			action = action.action;
 		}
 
@@ -1126,10 +1130,10 @@ var win$ = {
 
 		$.ajax({
 			type: 'POST',
-			url: AeJSEngine.getWinSettings(wid).url,
-			data: AeJSEngine.mergeParam(wid, params, {_x: 'y', _w: wid, _a: action, _pg: window.location.pathname, _purl: window.location.href}),
-			success: AeJSEngine.getActionResponseHandler(wid, funcs),
-			error: AeJSEngine.getErrorHandler(wid),
+			url: WinletJSEngine.getWinSettings(wid).url,
+			data: WinletJSEngine.mergeParam(wid, params, {_x: 'y', _w: wid, _a: action, _pg: window.location.pathname, _purl: window.location.href}),
+			success: WinletJSEngine.getActionResponseHandler(wid, funcs),
+			error: WinletJSEngine.getErrorHandler(wid),
 			dataType: "html"
 		});
 	},
@@ -1164,11 +1168,11 @@ var win$ = {
 		if (update && update.indexOf("!") >= 0)
 			focusUpdate = true;
 
-		AeJSEngine.setHash(wid, params);
+		WinletJSEngine.setHash(wid, params);
 		if (reload)
-			AeJSEngine.loadContent(wid, !focusUpdate);
+			WinletJSEngine.loadContent(wid, !focusUpdate);
 		if (update)
-			AeJSEngine.updateWindows(wid, update);
+			WinletJSEngine.updateWindows(wid, update);
 	},
 	
 	_toggle: function(wid, update) {
@@ -1178,10 +1182,10 @@ var win$ = {
 			$.extend(params, win$.getParams(arguments[i], wid));
 		}
 
-		AeJSEngine.setHash(wid, params, true);
+		WinletJSEngine.setHash(wid, params, true);
 
-		AeJSEngine.loadContent(wid);
-		AeJSEngine.updateWindows(wid, update);
+		WinletJSEngine.loadContent(wid);
+		WinletJSEngine.updateWindows(wid, update);
 	},
 
 	_url: function(wid, action) {
@@ -1190,7 +1194,7 @@ var win$ = {
 		for (var i = 2; i < arguments.length; i++)
 			$.extend(params, win$.getParams(arguments[i], wid));
 
-		return AeJSEngine.getWinSettings(wid).url + "?" + AeJSEngine.mergeParam(wid, params, {_x: 'y', _w: wid, _a: action, _pg: window.location.pathname, _purl: window.location.href});
+		return WinletJSEngine.getWinSettings(wid).url + "?" + WinletJSEngine.mergeParam(wid, params, {_x: 'y', _w: wid, _a: action, _pg: window.location.pathname, _purl: window.location.href});
 	},
 	
 	reAction: new RegExp('^(.*)!(.*)$'),
@@ -1262,8 +1266,8 @@ var win$ = {
 };
 
 $(window).hashchange(function(){
-	if (AeJSEngine.detectHashChange)
-		AeJSEngine.init();
+	if (WinletJSEngine.detectHashChange)
+		WinletJSEngine.init();
 	else
-		AeJSEngine.detectHashChange = true;
+		WinletJSEngine.detectHashChange = true;
 });
