@@ -173,6 +173,10 @@ jQuery.fn.winform = function() {
 			var param = {_vf: name, _vv: val, _vid: input.id};
 			param[name] = val;
 
+			$(this).find(":hidden").each(function() {
+				param[this.name] = this.value;
+			});
+
 			$.ajax({
 				  type: 'POST',
 				  url: this.action,
