@@ -8,8 +8,8 @@
 .rule a:active { color:blue; text-decoration:underline; margin: 0px 1px 0px 1px  }
 .move_icon {background-image: url("move.png"); height: 16px; width: 16px; margin: 5px; }
 
-.ae_drag { margin: 0px; padding: 0px; position: absolute; z-index: 10000}
-.ae_drop { margin: 0px; padding: 0px; height: 10px; background-color: #00ff00; min-width: 10px; width: auto !important; width: 10px;}
-.ae_area { position:relative; top: -17px; left: -17px}
-.ae_area > div.opac {  border-style: dotted; border-width: 1px; position: absolute; background-color: #E3ECFF; height: 100%; width: 100%}
-.ae_area > div.solid {padding: 8px; position: relative}
+.winlet_drag { margin: 0px; padding: 0px; position: absolute; z-index: 10000}
+.winlet_drop { margin: 0px; padding: 0px; height: 10px; background-color: #00ff00; min-width: 10px; width: auto !important; width: 10px;}
+.winlet_area { position:relative; top: -17px; left: -17px}
+.winlet_area > div.opac {  border-style: dotted; border-width: 1px; position: absolute; background-color: #E3ECFF; height: 100%; width: 100%}
+.winlet_area > div.solid {padding: 8px; position: relative}

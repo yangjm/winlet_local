@@ -277,8 +277,6 @@ var WinletJSEngine = {
 		createResultHolder: function(input) {
 			if (input.m_result != null)
 				return input.m_result;
-			if ($(input).data("validate") == "no")
-				return null;
 			input.m_result = $(input.form).find("span.validate_result[data-input='" + input.name.replace("[", "\\[").replace("]", "\\]").replace(".", "\\.") + "']");
 			if (input.m_result.length == 0) {
 				input.m_result = $('<span class="validate_result"></span>');
@@ -791,7 +789,7 @@ var WinletJSEngine = {
 
 			WinletJSEngine.invokeAfterLoad();
 			WinletJSEngine.clearLoading(uid);
-			container.trigger("AeWindowLoaded", wid);
+			container.trigger("WinletWindowLoaded", wid);
 
 			if (!dialog && focus)
 				WinletJSEngine.ensureVisible(uid);
