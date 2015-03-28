@@ -1,7 +1,13 @@
-# Quick Start
+# 关于
 
-You may get winlet_local with Bower:
+winlet_local是Winlet框架使用的页面端JavaScript引擎。
+
+# 下载winlet_local
+
+winlet_local已经在Bower注册。执行以下命令可以下载最新版本的winlet_local：
 
 ```
 bower install winlet_local
 ```
+
+如果不使用Bower，也可以直接从github clone本项目。
