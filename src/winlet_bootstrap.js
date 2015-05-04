@@ -1,9 +1,18 @@
+WinletJSEngine.centerModal = function() {
+    $(this).css('display', 'block');
+    var $dialog = $(this).find(".modal-dialog");
+    var offset = ($(window).height() - $dialog.height()) / 3;
+    // Center modal vertically in window
+    $dialog.css("margin-top", offset);
+}
+
 WinletJSEngine.getDialog = function(wid) {
 	if (wid != null) {
 		var dlg = $("div#ap_win_" + wid + "_dialog");
 		if (dlg.length == 0) {
 			dlg = $('<div class="modal fade" id="ap_win_' + wid + '_dialog" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><h4 class="modal-title">&nbsp;</h4></div><div class="modal-body">Body</div><div class="modal-footer">&nbsp;</div></div></div></div>');
 			$("div#ap_win_" + wid).append(dlg);
+			dlg.on('show.bs.modal', WinletJSEngine.centerModal);
 		}
 		
 		return dlg;
@@ -11,6 +20,7 @@ WinletJSEngine.getDialog = function(wid) {
 		if (WinletJSEngine.dlg == null) {
 			WinletJSEngine.dlg = $('<div class="modal fade" id="AeDialog" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><h4 class="modal-title">&nbsp;</h4></div><div class="modal-body">Body</div><div class="modal-footer">&nbsp;</div></div></div></div>');
 			$(document.body).append(WinletJSEngine.dlg);
+			WinletJSEngine.dlg.on('show.bs.modal', WinletJSEngine.centerModal);
 		}
 		
 		return WinletJSEngine.dlg;
@@ -46,6 +56,11 @@ WinletJSEngine.openDialog = function(shared, wid, content, title) {
 	if (settings != null) {
 		settings = JSON.parse(WinletJSEngine.procWinFunc(settings[1], wid));
 		dlg.find("h4.modal-title").empty().append(settings.title);
+		
+		if (settings.width && settings.width != '')
+			dlg.find('.modal-dialog').css("width", settings.width);
+		else
+			dlg.find('.modal-dialog').css("width", "");
 
 		var footer = dlg.find("div.modal-footer").empty();
 		for (var i = 0; i < settings.buttons.length; i++) {
@@ -92,10 +107,11 @@ WinletJSEngine.openDialog = function(shared, wid, content, title) {
 	});
 };
 
+
 WinletJSEngine.form.validateSuccess = function(input) {
 	var result = WinletJSEngine.form.getInputResult(input);
 	if (result != null) {
-		var parents = $(input).parents("div.form-group");
+		var parents = result.parents("div.form-group");
 		if (parents.length > 0)
 			$(parents[0]).removeClass("has-error").addClass("has-success");
 	}
@@ -108,7 +124,7 @@ WinletJSEngine.form.validateError = function() {
 
 		var result = WinletJSEngine.form.getInputResult(input);
 		if (result != null) {
-			var parents = $(input).parents("div.form-group");
+			var parents = result.parents("div.form-group");
 			if (parents.length > 0)
 				$(parents[0]).removeClass("has-success").addClass("has-error");
 		}
