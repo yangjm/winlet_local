@@ -1,16 +1,3 @@
-String.prototype.endsWith = function(suffix) {
-    return this.indexOf(suffix, this.length - suffix.length) !== -1;
-};
-
-String.prototype.parseJson = function() {
-	if (this.trim() == '')
-		return {};
-
-	if (JSON)
-		return JSON.parse(this);
-	return eval(this);
-};
-
 (function( jQuery, window, undefined ) {
 	"use strict";
 	 
@@ -434,6 +421,23 @@ var WinletJSEngine = {
 		}
 	},
 
+	parseJson: function(str) {
+		if (this.trim() == '')
+			return {};
+
+		if (JSON)
+			return JSON.parse(str);
+		return eval(str);
+	},
+
+	startsWith: function (str, w){
+	    return w && str.slice(0, w.length) == w;
+	},
+
+	endsWith: function (str, w){
+	    return w && str.slice(-w.length) == w;
+	},
+
 	_utf8_decode: function(utftext){
 		if (utftext == null)
 			return null;
@@ -535,18 +539,31 @@ var WinletJSEngine = {
 
 	getWinSettings: function($winlet) {
 		var settings = $winlet.data("winlet_settings");
-		if (settings != null)
-			return settings.parseJson();
-		return {};
+		if (settings == null)
+			return {};
+		if (typeof settings == 'string' || settings instanceof String)
+			return WinletJSEngine.parseJson(settings);
+		return settings;
 	},
 
 	getHash: function($winlet) {
 		var hashgroup = WinletJSEngine.getHashGroup($winlet);
 
 		try {
-			return $.param($.deparam(window.location.toString().split('#')[1])[hashgroup], true);
+			var params =  $.deparam(window.location.toString().split('#')[1]);
+			
+			if ('root' == hashgroup) {
+				var ret = {};
+				for (var p in params) {
+				    if (params.hasOwnProperty(p) && !(typeof params.hasOwnProperty(p) === 'object'))
+				    	ret[p] = params[p];
+				}
+				return ret;
+			} else
+				return params[hashgroup];
 		} catch (e){
 		}
+
 		return "";
 	},
 
@@ -561,38 +578,43 @@ var WinletJSEngine = {
 
 		if (!(params instanceof Object))
 			params = {};
-		if (params[hashgroup] == undefined)
-			params[hashgroup] = {};
+		var owner = params;
+		
+		if (hashgroup != 'root') {
+			if (params[hashgroup] == undefined)
+				params[hashgroup] = {};
+			owner = params[hashgroup];
+		}
 
 		if (toggle) {
 			for (property in hash) {
 				if ($.isArray(hash[property])) { // array property
-					if (!($.isArray(params[hashgroup][property]))) { // not array in hash, replace directly
-						params[hashgroup][property] = hash[property];
+					if (!($.isArray(owner[property]))) { // not array in hash, replace directly
+						owner[property] = hash[property];
 					} else { // array in hash as well
 						$.each(hash[property], function(index, value){
 							value = "" + value;
-							var idx = $.inArray(value, params[hashgroup][property]);
+							var idx = $.inArray(value, owner[property]);
 							if (idx < 0) // value not in hash array, add
-								params[hashgroup][property].push(value);
+								owner[property].push(value);
 							else // value already in hash array, remove
-								params[hashgroup][property].splice(idx, 1);
+								owner[property].splice(idx, 1);
 						});
 					}
 				} else { // not array
-					if (params[hashgroup][property] == hash[property])
-						delete params[hashgroup][property];
+					if (owner[property] == hash[property])
+						delete owner[property];
 					else
-						params[hashgroup][property] = hash[property];
+						owner[property] = hash[property];
 				}
 			}
 		} else {
-			$.extend(params[hashgroup], hash);
+			$.extend(owner, hash);
 		}
 
-		for (property in params[hashgroup]) {
-		    if (params[hashgroup][property] == '')
-		    	delete params[hashgroup][property];
+		for (property in owner) {
+		    if (owner[property] == '')
+		    	delete owner[property];
 		}
 
 		WinletJSEngine.detectHashChange = false;
@@ -616,7 +638,7 @@ var WinletJSEngine = {
 			var params = $(parents[i]).data("winlet-params");
 			if (params != null) {
 				if (typeof params == "string")
-					$.extend(obj, params.parseJson());
+					$.extend(obj, WinletJSEngine.parseJson(params));
 				else
 					$.extend(obj, params);
 			}
@@ -625,7 +647,7 @@ var WinletJSEngine = {
 		var params = $winlet.data("winlet-params");
 		if (params != null) {
 			if (typeof params == "string")
-				$.extend(obj, params.parseJson());
+				$.extend(obj, WinletJSEngine.parseJson(params));
 			else
 				$.extend(obj, params);
 		}
@@ -640,7 +662,7 @@ var WinletJSEngine = {
 		}
 
 		try {
-			$.extend(obj, $.deparam(WinletJSEngine.getHash($winlet)));
+			$.extend(obj, WinletJSEngine.getHash($winlet));
 		} catch (e) {
 		}
 
@@ -1086,7 +1108,9 @@ var WinletJSEngine = {
 
 		if (!hashchange) { // 初次初始化
 			WinletJSEngine.isStatic = true;
-			
+
+			WinletJSEngine.updateHref($("body"));
+
 			// 借助样式获取图片文件URL
 			$("body").append("<div id='winlet_style_temp' style='display:none'><div class='winlet_background'>1</div><div class='winlet_loading'>2</div><div class='winlet_validating'>3</div></div>");
 			$(function() {
@@ -1127,6 +1151,9 @@ var WinletJSEngine = {
 							var pmatch = params[i].match(WinletJSEngine.reWinletParam);
 							settings[pmatch[1]] = pmatch[2];
 						}
+
+						if ('yes' == settings['root'] && WinletJSEngine.hashGroupMap['root'] == null) // 占用root hash group
+							WinletJSEngine.hashGroupMap[WinletJSEngine.getWinletRoot($(this))] = 'root';
 
 						$(this).attr("data-winlet-settings", JSON.stringify(settings));
 					}
