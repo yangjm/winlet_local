@@ -451,7 +451,7 @@ jQuery.fn.winform = function() {
 							_purl : window.location.href
 						}),
 						success : WinletJSEngine.getActionResponseHandler(
-								$winlet, this, this.aftersubmit),
+								$winlet, false, this, this.aftersubmit),
 						error : WinletJSEngine.getErrorHandler($winlet),
 						dataType : "text"
 					});
@@ -1418,12 +1418,12 @@ var WinletJSEngine = {
 	 * @param wid
 	 * @returns {Function}
 	 */
-	getActionResponseHandler : function($winlet) {
+	getActionResponseHandler : function($winlet, focus) {
 		var form = null;
 		var funcs = null;
 		var wid = $winlet.data("winlet-id");
 
-		for (var i = 1; i < arguments.length; i++) {
+		for (var i = 2; i < arguments.length; i++) {
 			if (arguments[i] == null)
 				continue;
 
@@ -1490,7 +1490,7 @@ var WinletJSEngine = {
 			}
 
 			if (!dataProcessed && !(cache == "yes"))
-				WinletJSEngine.getWindowResponseHandler(wid, true)(data, textStatus,
+				WinletJSEngine.getWindowResponseHandler(wid, focus)(data, textStatus,
 						jqXHR);
 
 			WinletJSEngine.updateWindows($winlet, update);
@@ -1683,10 +1683,13 @@ var win$ = {
 		var params = {};
 		var funcs = [];
 		var hash = null;
+		var focus = false;
 		var $winlet = WinletJSEngine.getWinlet(wid);
 
 		if (typeof action == "object") {
 			hash = action.hash;
+			if (action.hasOwnProperty("focus"))
+				focus = action.focus;
 			action = action.action;
 		}
 
@@ -1740,7 +1743,7 @@ var win$ = {
 				_pg : window.location.pathname,
 				_purl : window.location.href
 			}),
-			success : WinletJSEngine.getActionResponseHandler($winlet, funcs),
+			success : WinletJSEngine.getActionResponseHandler($winlet, focus, funcs),
 			error : WinletJSEngine.getErrorHandler($winlet),
 			dataType : "html"
 		});
