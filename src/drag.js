@@ -384,7 +384,10 @@ $(document).on("WinletWindowLoaded", function(event) {
 
 			$("body")
 				.off("mouseup")
-				.on("mouseup", function(e) {
+				.on("mouseup", function(upevent) {
+					if (upevent.target == e.target && upevent.button == 2)
+						return true;
+
 					$menu.css({
 						display: "none"
 						});

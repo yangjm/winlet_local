@@ -27,6 +27,15 @@ WinletJSEngine.getDialog = function(wid) {
 	}
 }
 
+/**
+ * 如果wid不包含在公用对话框中则关闭对话框
+ */
+WinletJSEngine.closeDialogIfWinletNotInside = function(wid) {
+	var dlg = WinletJSEngine.getDialog();
+	if (dlg.find('div[data-winlet-id="' + wid + '"]').length == 0)
+		WinletJSEngine.closeDialog();
+};
+
 WinletJSEngine.closeDialog = function(wid) {
 	var dlg = WinletJSEngine.getDialog(wid);
 
