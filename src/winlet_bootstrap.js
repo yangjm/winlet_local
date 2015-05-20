@@ -1,61 +1,64 @@
-WinletJSEngine.centerModal = function() {
-    $(this).css('display', 'block');
-    var $dialog = $(this).find(".modal-dialog");
-    var offset = ($(window).height() - $dialog.height()) / 3;
-    // Center modal vertically in window
-    $dialog.css("margin-top", offset);
-}
+WinletJSEngine.getDialog = function($winlet, createIfNotExist) {
+	if ($winlet == null || $winlet.length != 1)
+		return null;
 
-WinletJSEngine.getDialog = function(wid) {
-	if (wid != null) {
-		var dlg = $("div#ap_win_" + wid + "_dialog");
-		if (dlg.length == 0) {
-			dlg = $('<div class="modal fade" id="ap_win_' + wid + '_dialog" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><h4 class="modal-title">&nbsp;</h4></div><div class="modal-body">Body</div><div class="modal-footer">&nbsp;</div></div></div></div>');
-			$("div#ap_win_" + wid).append(dlg);
-			dlg.on('show.bs.modal', WinletJSEngine.centerModal);
-		}
-		
-		return dlg;
-	} else {
-		if (WinletJSEngine.dlg == null) {
-			WinletJSEngine.dlg = $('<div class="modal fade" id="AeDialog" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><h4 class="modal-title">&nbsp;</h4></div><div class="modal-body">Body</div><div class="modal-footer">&nbsp;</div></div></div></div>');
-			$(document.body).append(WinletJSEngine.dlg);
-			WinletJSEngine.dlg.on('show.bs.modal', WinletJSEngine.centerModal);
-		}
-		
-		return WinletJSEngine.dlg;
+	var dlg = $winlet.find('div[data-winlet-dialog="yes"]');
+	if (dlg.length == 0 || WinletJSEngine.getWinlet(dlg[0])[0] != $winlet[0]) {
+		if (!createIfNotExist)
+			return null;
+
+		dlg = $('<div class="modal fade" data-winlet-dialog="yes" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><h4 class="modal-title">&nbsp;</h4></div><div class="modal-body">Body</div><div class="modal-footer">&nbsp;</div></div></div></div>');
+		$winlet.append(dlg);
+		dlg.on('show.bs.modal', function() {
+		    $(this).css('display', 'block');
+		    var $dialog = $(this).find(".modal-dialog");
+		    var offset = ($(window).height() - $dialog.height()) / 3;
+		    // Center modal vertically in window
+		    $dialog.css("margin-top", offset);
+		});
 	}
+	
+	return dlg;
 }
 
 /**
- * 如果wid不包含在公用对话框中则关闭对话框
+ * 返回deferred对象，resolve了表示对话框完成关闭。
+ * 如果在完成对话框关闭前把对话框从dom中去除，会导致对话框关闭不完整，挡住页面的背景div不会被正常清除
  */
-WinletJSEngine.closeDialogIfWinletNotInside = function(wid) {
-	var dlg = WinletJSEngine.getDialog();
-	if (dlg.find('div[data-winlet-id="' + wid + '"]').length == 0)
-		WinletJSEngine.closeDialog();
-};
+WinletJSEngine.closeDialog = function($winlet) {
+	var d = $.Deferred();
 
-WinletJSEngine.closeDialog = function(wid) {
-	var dlg = WinletJSEngine.getDialog(wid);
+	var dlg = WinletJSEngine.getDialog($winlet, false);
+	if (dlg == null) {
+		d.resolve();
+		return d;
+	}
 
 	try {
 		if (dlg.hasClass('in')) // http://stackoverflow.com/questions/19674701/can-i-check-if-bootstrap-modal-shown-hidden
-			dlg.modal('hide');
+			dlg.off('hidden.bs.modal').on('hidden.bs.modal', function(){
+				d.resolve();
+			}).modal('hide');
+		else
+			d.resolve();
 	} catch (e) {
+		d.resolve();
 	}
 	dlg.find("div.modal-body").empty();
+
+	return d;
 };
 
-WinletJSEngine.openDialog = function(shared, wid, content, title) {
-	var dlg = WinletJSEngine.getDialog(shared ? null : wid);
+WinletJSEngine.openDialog = function($winlet, content, title) {
+	var dlg = WinletJSEngine.getDialog($winlet, true);
 
 	var body = dlg.find("div.modal-body"); 
-	var html = $.trim(WinletJSEngine.procStyle(WinletJSEngine.procWinFunc(content.replace(WinletJSEngine.reScriptAll, '')
-			.replace(WinletJSEngine.reDialogSetting, ''), wid)));
+	var html = $.trim(WinletJSEngine.procStyle(WinletJSEngine.procWinFunc(
+			content.replace(WinletJSEngine.reScriptAll, '')
+			.replace(WinletJSEngine.reDialogSetting, ''), $winlet)));
 
-	if (!shared && html == '') {
-		WinletJSEngine.closeDialog(wid);
+	if (html == '') {
+		WinletJSEngine.closeDialog($winlet);
 		return;
 	}
 
@@ -63,7 +66,7 @@ WinletJSEngine.openDialog = function(shared, wid, content, title) {
 
 	var settings = WinletJSEngine.reDialogSetting.exec(content);
 	if (settings != null) {
-		settings = JSON.parse(WinletJSEngine.procWinFunc(settings[1], wid));
+		settings = JSON.parse(WinletJSEngine.procWinFunc(settings[1], $winlet));
 		dlg.find("h4.modal-title").empty().append(settings.title);
 		
 		if (settings.width && settings.width != '')
@@ -73,7 +76,7 @@ WinletJSEngine.openDialog = function(shared, wid, content, title) {
 
 		var footer = dlg.find("div.modal-footer").empty();
 		for (var i = 0; i < settings.buttons.length; i++) {
-			var button = "<button";
+			var button = "<button type=\"button\"";
 			for (var prop in settings.buttons[i]) {
 				if (prop != 'label')
 					button = button + " " + prop + "=\"" + settings.buttons[i][prop] + "\"";
@@ -89,10 +92,9 @@ WinletJSEngine.openDialog = function(shared, wid, content, title) {
 	$(function() {
 		var focus = null;
 
-		body.find("form[data-winlet-wid]").each(function() {
+		body.find("form[data-winlet-form]").each(function() {
 			var form = $(this);
 			form.winform({
-				wid: form.attr("data-winlet-wid"),
 				focus: form.attr("data-winlet-focus"),
 				update: form.attr("data-winlet-update"),
 				validate: form.attr("data-winlet-validate"),
@@ -103,7 +105,7 @@ WinletJSEngine.openDialog = function(shared, wid, content, title) {
 				focus = form.find('input[name="' + form.attr("data-winlet-focus") + '"]');
 		});
 
-		WinletJSEngine.procScript(wid, content);
+		WinletJSEngine.procScript(content, $winlet);
 
 		if (focus) {
 			dlg.off('shown.bs.modal').on('shown.bs.modal', function () {

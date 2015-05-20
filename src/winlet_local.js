@@ -392,7 +392,9 @@ jQuery.fn.winform = function() {
 							return false;
 						}
 
-					var $winlet = WinletJSEngine.getWinlet(settings.wid);
+					var $winlet = WinletJSEngine.getWinlet(this);
+					if ($winlet == null || $winlet.length == 0)
+						return false;
 
 					if ($(this).attr("enctype") == "multipart/form-data") {
 						this.action = this.action + "&"
@@ -411,7 +413,7 @@ jQuery.fn.winform = function() {
 								params[this.name] = "";
 						});
 						WinletJSEngine.setHash($winlet, params);
-						WinletJSEngine.loadContent(settings.wid);
+						WinletJSEngine.loadContent($winlet);
 						WinletJSEngine.updateWindows($winlet, settings.update);
 
 						return false;
@@ -463,7 +465,7 @@ jQuery.fn.winform = function() {
 					if (name == undefined)
 						name = input.name;
 
-					var $winlet = WinletJSEngine.getWinlet(settings.wid);
+					var $winlet = WinletJSEngine.getWinlet(this);
 
 					WinletJSEngine.form.validating(input);
 
@@ -593,7 +595,7 @@ var WinletJSEngine = {
 	reScriptCharset : new RegExp('.*?charset.*?=.*?"(.*?)"', 'im'),
 	reCSSAll : new RegExp('<link.*?type="text/css".*?>', 'img'),
 	reCSSHref : new RegExp('.*?href="(.*?)"', 'im'),
-	reWinWid : new RegExp('win\\$\\.wid\\s*\\(.*\\)', 'img'),
+	reWinWinlet : new RegExp('win\\$\\.winlet\\s*\\(', 'img'),
 	reWinPost : new RegExp('win\\$\\.post\\s*\\(', 'img'),
 	reWinAjax : new RegExp('win\\$\\.ajax\\s*\\(', 'img'),
 	reWinGet : new RegExp('win\\$\\.get\\s*\\(', 'img'),
@@ -826,17 +828,21 @@ var WinletJSEngine = {
 		return string;
 	},
 
-	getWinlet : function(wid) {
-		return $('div[data-winlet-id="' + wid + '"]');
+	getWinlet : function(element) {
+		var $winlet = null;
+
+		if (typeof element === "number")
+			$winlet = $('div[data-winlet-id="' + element + '"]');
+		else
+			$winlet = $(element).closest("div[data-winlet-url]");
+
+		if ($winlet.length == 1)
+			return $winlet;
+		return null;
 	},
 
-	getRootWinId : function(wid) {
-		wid = wid.toString();
-		return wid.substr(0, 1 + parseInt(wid.substr(0, 1)));
-	},
-
-	isRootWinId : function(wid) {
-		return WinletJSEngine.getRootWinId(wid) == wid;
+	isRootWinlet : function($winlet) {
+		return $winlet.parent().closest("div[data-winlet-url]").length == 0;;
 	},
 
 	getWinletUrl : function($winlet) {
@@ -1072,17 +1078,19 @@ var WinletJSEngine = {
 		}
 	},
 
-	clearLoading : function(wid) {
+	clearLoading : function($winlet) {
 		try {
-			$("#winlet_loading_" + wid).remove();
+			if ($winlet.loading) {
+				$winlet.loading.remove();
+				$winlet.loading = null;
+			}
 		} catch (e) {
 		}
 	},
 
 	showLoading : function($winlet, dialog) {
 		try {
-			var wid = $winlet.data("winlet-id");
-			WinletJSEngine.clearLoading(wid);
+			WinletJSEngine.clearLoading($winlet);
 
 			var rect = new ElmRect($winlet);
 			try {
@@ -1098,9 +1106,7 @@ var WinletJSEngine = {
 				// 如果图片不存在，img src=''会导致对页面的访问。因此图片不存在时不显示loading
 				var html;
 				if (jQuery.browser.version == '6.0')
-					html = "<div id='winlet_loading_"
-							+ wid
-							+ "' style='z-index:100000;position:absolute;background-color:#999999;filter:alpha(opacity=30);-moz-opacity:0.3;left:"
+					html = "<div style='z-index:100000;position:absolute;background-color:#999999;filter:alpha(opacity=30);-moz-opacity:0.3;left:"
 							+ rect.left
 							+ "px;top:"
 							+ rect.top
@@ -1112,9 +1118,7 @@ var WinletJSEngine = {
 							+ WinletJSEngine.ImgLoading.src
 							+ "'/></td></tr></table></div>";
 				else
-					html = "<div id='winlet_loading_"
-							+ wid
-							+ "' style='z-index:100000;position:absolute;background:url("
+					html = "<div style='z-index:100000;position:absolute;background:url("
 							+ WinletJSEngine.ImgBg.src
 							+ ");left:"
 							+ rect.left
@@ -1127,7 +1131,8 @@ var WinletJSEngine = {
 							+ "px'><table width='100%' height='100%' border='0'><tr height='100%'><td align='center' valign='middle'><img src='"
 							+ WinletJSEngine.ImgLoading.src
 							+ "'/></td></tr></table></div>";
-				$("body").append(html);
+				$winlet.loading = $(html);
+				$winlet.loading.appendTo("body");
 			}
 		} catch (e) {
 		}
@@ -1168,10 +1173,12 @@ var WinletJSEngine = {
 		return cont.replace(WinletJSEngine.reCSSAll, '');
 	},
 
-	procWinFunc : function(cont, wid) {
+	procWinFunc : function(cont, $winlet) {
+		var wid = $winlet.data("winlet-id");
+
 		return cont.replace(WinletJSEngine.reWinPost,
-				'win$._post(' + wid + ', ').replace(WinletJSEngine.reWinWid,
-				'win$._wid(' + wid + ')').replace(WinletJSEngine.reWinAjax,
+				'win$._post(' + wid + ', ').replace(WinletJSEngine.reWinWinlet,
+				'win$._winlet(' + wid).replace(WinletJSEngine.reWinAjax,
 				'win$._ajax(' + wid + ', ').replace(WinletJSEngine.reWinGet,
 				'win$._get(' + wid + ', ').replace(WinletJSEngine.reWinToggle,
 				'win$._toggle(' + wid + ', ').replace(WinletJSEngine.reWinUrl,
@@ -1181,7 +1188,7 @@ var WinletJSEngine = {
 				'win$._aftersubmit(' + wid + ', ');
 	},
 
-	procScript : function(wid, cont) {
+	procScript : function(cont, $winlet) {
 		var scripts = cont.match(WinletJSEngine.reScriptAll) || [];
 		var scriptContent = $.map(scripts,
 				function(scriptTag) {
@@ -1261,7 +1268,7 @@ var WinletJSEngine = {
 		$.when.apply($, ret).done(function() {
 			for (i = 0; i < scriptContent.length; i++)
 				try {
-					eval(WinletJSEngine.procWinFunc(scriptContent[i], wid));
+					eval(WinletJSEngine.procWinFunc(scriptContent[i], $winlet));
 				} catch (e) {
 					alert(e.message);
 					alert(scriptContent[i]);
@@ -1279,10 +1286,9 @@ var WinletJSEngine = {
 	},
 
 	enableForm : function(container) {
-		container.find("form[data-winlet-wid]").each(function() {
+		container.find("form[data-winlet-form]").each(function() {
 			var form = $(this);
 			form.winform({
-				wid : form.attr("data-winlet-wid"),
 				focus : form.attr("data-winlet-focus"),
 				update : form.attr("data-winlet-update"),
 				validate : form.attr("data-winlet-validate"),
@@ -1308,14 +1314,12 @@ var WinletJSEngine = {
 	/**
 	 * Window方法执行返回结果的处理
 	 * 
-	 * @param wid
+	 * @param $winlet
 	 * @param focus
 	 * @returns {Function}
 	 */
-	getWindowResponseHandler : function(wid, focus) {
+	getWindowResponseHandler : function($winlet, focus) {
 		return function(data, textStatus, jqXHR) {
-			var $winlet = WinletJSEngine.getWinlet(wid);
-
 			if ($winlet.length == 0)
 				return;
 
@@ -1326,38 +1330,36 @@ var WinletJSEngine = {
 			}
 
 			var dialog = false;
-			if (WinletJSEngine.isRootWinId(wid)
+			if (WinletJSEngine.isRootWinlet($winlet)
 					&& WinletJSEngine.getWinSettings($winlet).dialog == "yes") {
 				dialog = true;
 
 				var title = WinletJSEngine._utf8_decode(jqXHR
 						.getResponseHeader('X-Winlet-Title'));
-				WinletJSEngine.openDialog(false, wid, data, title);
+				WinletJSEngine.openDialog($winlet, data, title);
 			} else {
 				$winlet.html(WinletJSEngine.procStyle(WinletJSEngine
 						.procWinFunc(data.replace(WinletJSEngine.reScriptAll,
-								''), wid)));
+								''), $winlet)));
 				$(function() {
 					WinletJSEngine.enableForm($winlet);
 					WinletJSEngine.updateHref($winlet);
 				});
 
-				WinletJSEngine.procScript(wid, data);
+				WinletJSEngine.procScript(data, $winlet);
 			}
 
 			WinletJSEngine.invokeAfterLoad();
-			WinletJSEngine.clearLoading(wid);
-			$winlet.trigger("WinletWindowLoaded", wid);
+			WinletJSEngine.clearLoading($winlet);
+			$winlet.trigger("WinletWindowLoaded", $winlet);
 
 			if (!dialog && focus)
 				WinletJSEngine.ensureVisible($winlet);
 		};
 	},
 
-	loadContent : function(wid, focus, pageRefresh) {
-		var $winlet = WinletJSEngine.getWinlet(wid);
-
-		if ($winlet.length == 0)
+	loadContent : function($winlet, focus, pageRefresh) {
+		if ($winlet == null || $winlet.length != 1)
 			return;
 
 		WinletJSEngine.showLoading($winlet);
@@ -1367,12 +1369,11 @@ var WinletJSEngine = {
 			url : WinletJSEngine.getWinletUrl($winlet),
 			data : WinletJSEngine.mergeParam($winlet, {
 				_x : 'y',
-				_w : wid,
 				_pg : window.location.pathname,
 				_purl : window.location.href,
 				_pr : pageRefresh ? "yes" : "no"
 			}),
-			success : WinletJSEngine.getWindowResponseHandler(wid, focus),
+			success : WinletJSEngine.getWindowResponseHandler($winlet, focus),
 			error : WinletJSEngine.getErrorHandler(),
 			dataType : "html"
 		});
@@ -1403,9 +1404,7 @@ var WinletJSEngine = {
 					ud = WinletJSEngine.getWinletRoot($winlet) + ud;
 
 				$('div[data-winlet-url="' + ud + '"]').each(function() {
-					var updatewid = $(this).data("winlet-id");
-					if (updatewid != null && updatewid != "")
-						WinletJSEngine.loadContent(updatewid, focus);
+					WinletJSEngine.loadContent($(this), focus);
 				});
 			} catch (e) {
 			}
@@ -1415,13 +1414,12 @@ var WinletJSEngine = {
 	/**
 	 * Action方法执行返回结果的处理
 	 * 
-	 * @param wid
+	 * @param $winlet
 	 * @returns {Function}
 	 */
 	getActionResponseHandler : function($winlet, focus) {
 		var form = null;
 		var funcs = null;
-		var wid = $winlet.data("winlet-id");
 
 		for (var i = 2; i < arguments.length; i++) {
 			if (arguments[i] == null)
@@ -1454,7 +1452,7 @@ var WinletJSEngine = {
 				return;
 			}
 
-			WinletJSEngine.clearLoading(wid);
+			WinletJSEngine.clearLoading($winlet);
 
 			// 只有处理表单提交响应时form参数才不为null。如果时直接调用action或者翻译窗口url，form参数都为空
 			if (form != null && dialog != "yes"
@@ -1472,40 +1470,49 @@ var WinletJSEngine = {
 				return;
 			}
 
-			var dataProcessed = false;
-			if (funcs != null) {
-				for (var i = 0; i < funcs.length; i++) {
-					try {
-						var ret = funcs[i](data, textStatus, jqXHR);
+			var d;
+			if (dialog != "yes")
+				d = WinletJSEngine.closeDialog($winlet);
+			else {
+				d = $.Deferred();
+				d.resolve();
+			}
 
-						// 函数返回false则表示返回的数据已经处理完毕
-						if (ret != undefined && ret != null && !ret) {
-							dataProcessed = true;
-							break;
+			d.done(function() {
+				var dataProcessed = false;
+				if (funcs != null) {
+					for (var i = 0; i < funcs.length; i++) {
+						try {
+							var ret = funcs[i](data, textStatus, jqXHR, $winlet);
+
+							// 函数返回false则表示返回的数据已经处理完毕
+							if (ret != undefined && ret != null && !ret) {
+								dataProcessed = true;
+								break;
+							}
+						} catch (e) {
+							alert(e);
 						}
-					} catch (e) {
-						alert(e);
 					}
 				}
-			}
 
-			if (!dataProcessed && !(cache == "yes"))
-				WinletJSEngine.getWindowResponseHandler(wid, focus)(data, textStatus,
-						jqXHR);
+				if (dialog == "yes") {
+					if (!dataProcessed)
+						WinletJSEngine.openDialog($winlet, data, title);
+				}
+				else {
+					if (!dataProcessed && !(cache == "yes"))
+						WinletJSEngine.getWindowResponseHandler($winlet, focus)(data, textStatus,
+								jqXHR);
+				}
 
-			WinletJSEngine.updateWindows($winlet, update);
-
-			if (dialog == "yes") {
-				if (!dataProcessed)
-					WinletJSEngine.openDialog(true, wid, data, title);
-			}
-			else
-				WinletJSEngine.closeDialogIfWinletNotInside(wid);
+				WinletJSEngine.updateWindows($winlet, update);
+			});
 		};
 	},
 
 	// 简单的错误处理 － 刷新当前页面
-	getErrorHandler : function(wid) {
+	getErrorHandler : function($winlet) {
 		return function(req, textStatus, errorThrown) {
 			// document.location.reload(true);
 		};
@@ -1568,79 +1575,75 @@ var WinletJSEngine = {
 
 				// 获得图片文件URL后再开始加载窗口
 
-				$('div[data-winlet-id]').each(function() { // 初始化预加载的窗口中的表单
+				$('div[data-winlet-url]').each(function() { // 初始化预加载的窗口中的表单
 					WinletJSEngine.enableForm($(this));
 					WinletJSEngine.updateHref($(this));
 				});
 
 				var hasHash = window.location.toString().indexOf("#") > 0;
 
-				$('div[data-winlet]')
-						.each(
-								function() { // 强制预加载窗口和include子窗口没有data-winlet属性，不会被处理
-									var match = $(this).data("winlet").match(
-											WinletJSEngine.reWinlet);
+				$('div[data-winlet]').each(
+					function() { // 强制预加载窗口和include子窗口没有data-winlet属性，不会被处理
+						var preloaded = $(this).data("winlet-url") != null;
 
-									var url = match[1];
-									if (!url.indexOf("/") == 0)
-										url = "/" + url;
-									$(this).attr("data-winlet-url", url);
+						var match = $(this).data("winlet").match(
+								WinletJSEngine.reWinlet);
 
-									// 提取data-winlet中的参数
-									if (match.length > 5 && match[5] != null
-											&& match[5] != null)
-										$(this).attr(
-												"data-winlet-params",
-												JSON.stringify($
-														.deparam(match[5])));
+						var url = match[1];
+						if (!url.indexOf("/") == 0)
+							url = "/" + url;
+						$(this).attr("data-winlet-url", url);
 
-									// 提取data-winlet中的设置
-									if (match.length > 7 && match[7] != null
-											&& match[7] != '') {
-										var settings = {};
+						// 提取data-winlet中的参数
+						if (match.length > 5 && match[5] != null
+								&& match[5] != null)
+							$(this).attr(
+									"data-winlet-params",
+									JSON.stringify($
+											.deparam(match[5])));
 
-										var params = match[7].split(',');
-										var i;
+						// 提取data-winlet中的设置
+						if (match.length > 7 && match[7] != null
+								&& match[7] != '') {
+							var settings = {};
 
-										for (i = 0; i < params.length; i++) {
-											var pmatch = params[i]
-													.match(WinletJSEngine.reWinletParam);
-											settings[pmatch[1]] = pmatch[2];
-										}
+							var params = match[7].split(',');
+							var i;
 
-										if ('yes' == settings['root']
-												&& WinletJSEngine.hashGroupMap['root'] == null) // 占用root
-																								// hash
-																								// group
-											WinletJSEngine.hashGroupMap[WinletJSEngine
-													.getWinletRoot($(this))] = 'root';
+							for (i = 0; i < params.length; i++) {
+								var pmatch = params[i]
+										.match(WinletJSEngine.reWinletParam);
+								settings[pmatch[1]] = pmatch[2];
+							}
 
-										$(this).attr("data-winlet-settings",
-												JSON.stringify(settings));
-									}
+							if ('yes' == settings['root']
+									&& WinletJSEngine.hashGroupMap['root'] == null) // 占用root
+																					// hash
+																					// group
+								WinletJSEngine.hashGroupMap[WinletJSEngine
+										.getWinletRoot($(this))] = 'root';
 
-									if ($(this).data("winlet-id") != null) { // winlet已经在服务器端预加载
-										if (hasHash) // 客户端已经有状态数据，需要重新加载。winlet可以通过pageUrl访问所有hash数据，不一定只使用其hashgroup中的数据
-											WinletJSEngine.loadContent($(this)
-													.data("winlet-id"), false,
-													true);
-									} else { // winlet未在服务器端预加载，分配wid，加载内容
-										var wid = idx.toString().length
-												.toString()
-												+ idx;
-										idx++;
+							$(this).attr("data-winlet-settings",
+									JSON.stringify(settings));
+						}
 
-										$(this).attr("data-winlet-id", wid);
-										WinletJSEngine.loadContent(wid, false,
-												true);
-									}
-								});
+						if (preloaded) { // winlet已经在服务器端预加载
+							if (hasHash) // 客户端已经有状态数据，需要重新加载。winlet可以通过pageUrl访问所有hash数据，不一定只使用其hashgroup中的数据
+								WinletJSEngine.loadContent($(this), false,
+										true);
+						} else { // winlet未在服务器端预加载，分配id，加载内容
+							// ID不会被传送给服务器端。分配ID的目的是为了让javascript脚本
+							// 能够找到所属的winlet 
+							$(this).attr("data-winlet-id", ++idx);
+							WinletJSEngine.loadContent($(this), false,
+									true);
+						}
+					});
 			});
 		} else { // 回退按钮改变hash导致重新加载窗口
 			$('div[data-winlet]').each(
 					function() { // 强制预加载窗口和include子窗口没有data-winlet属性，不会被处理
-						WinletJSEngine.loadContent($(this).data("winlet-id"),
-								false, true);
+						WinletJSEngine.loadContent($(this), false, true);
 					});
 		}
 	}
@@ -1654,7 +1657,7 @@ var win$ = {
 	 *            要转换的对象，可以为表单名称，表单对象，JSON数据或URL param格式的字符串
 	 * @returns
 	 */
-	getParams : function(params, wid) {
+	getParams : function(params, $winlet) {
 		try {
 			if (typeof params == "string") { // 类型为字符串
 				if (params.indexOf("{") == 0) { // json字符串
@@ -1664,7 +1667,7 @@ var win$ = {
 					return $.deparam(params);
 				else
 					// params为form name
-					params = $('form[name="' + params + wid + '"]');
+					params = $winlet.find('form[name="' + params + '"]');
 			}
 
 			if (params.is('form'))
@@ -1675,16 +1678,19 @@ var win$ = {
 		return params;
 	},
 
-	_wid : function(wid) {
-		return wid;
+	_winlet: function(element) {
+		return WinletJSEngine.getWinlet(element);
 	},
 
-	_post : function(wid, action) {
+	_post : function(element, action) {
+		var $winlet = WinletJSEngine.getWinlet(element);
+		if ($winlet == null)
+			return false;
+
 		var params = {};
 		var funcs = [];
 		var hash = null;
 		var focus = false;
-		var $winlet = WinletJSEngine.getWinlet(wid);
 
 		if (typeof action == "object") {
 			hash = action.hash;
@@ -1716,8 +1722,6 @@ var win$ = {
 
 			if ($winlet.length > 1)
 				$winlet = $($winlet[0]);
-
-			wid = $winlet.data("winlet-id");
 		}
 
 		if (hash != null)
@@ -1730,7 +1734,7 @@ var win$ = {
 			if (typeof arguments[i] === 'function')
 				funcs[funcs.length] = arguments[i];
 			else
-				$.extend(params, win$.getParams(arguments[i], wid));
+				$.extend(params, win$.getParams(arguments[i], $winlet));
 		}
 
 		$.ajax({
@@ -1738,7 +1742,6 @@ var win$ = {
 			url : WinletJSEngine.getWinletUrl($winlet),
 			data : WinletJSEngine.mergeParam($winlet, params, {
 				_x : 'y',
-				_w : wid,
 				_a : action,
 				_pg : window.location.pathname,
 				_purl : window.location.href
@@ -1747,16 +1750,28 @@ var win$ = {
 			error : WinletJSEngine.getErrorHandler($winlet),
 			dataType : "html"
 		});
+
+		return false;
 	},
 
-	_ajax : function(wid, paramFunc) {
-		$.ajax(paramFunc(wid));
+	_ajax : function(element, paramFunc) {
+		var $winlet = WinletJSEngine.getWinlet(element);
+		if ($winlet == null)
+			return;
+
+		$.ajax(paramFunc($winlet));
+		
+		return false;
 	},
 
-	_get : function(wid, param) {
+	_get : function(element, param) {
+		var $winlet = WinletJSEngine.getWinlet(element);
+		if ($winlet == null)
+			return false;
+
 		var reload = true;
 		var update = null;
-		var $winlet = WinletJSEngine.getWinlet(wid);
+		var focus = true;
 
 		if (param != null)
 			if (typeof param == "object") {
@@ -1765,6 +1780,8 @@ var win$ = {
 						reload = param[prop];
 					if ("update" == prop)
 						update = param[prop];
+					if ("focus" == prop)
+						focus = param[prop];
 				}
 			} else {
 				update = param;
@@ -1773,7 +1790,7 @@ var win$ = {
 		var params = {};
 
 		for (var i = 2; i < arguments.length; i++) {
-			$.extend(params, win$.getParams(arguments[i], wid));
+			$.extend(params, win$.getParams(arguments[i], $winlet));
 		}
 
 		var focusUpdate = false;
@@ -1782,36 +1799,45 @@ var win$ = {
 
 		WinletJSEngine.setHash($winlet, params);
 		if (reload)
-			WinletJSEngine.loadContent(wid, !focusUpdate);
+			WinletJSEngine.loadContent($winlet, focus && !focusUpdate);
 		if (update)
 			WinletJSEngine.updateWindows($winlet, update);
+		
+		return false;
 	},
 
-	_toggle : function(wid, update) {
-		var $winlet = WinletJSEngine.getWinlet(wid);
+	_toggle : function(element, update) {
+		var $winlet = WinletJSEngine.getWinlet(element);
+		if ($winlet == null)
+			return false;
+
 		var params = {};
 
 		for (var i = 2; i < arguments.length; i++) {
-			$.extend(params, win$.getParams(arguments[i], wid));
+			$.extend(params, win$.getParams(arguments[i], $winlet));
 		}
 
 		WinletJSEngine.setHash($winlet, params, true);
 
-		WinletJSEngine.loadContent(wid);
+		WinletJSEngine.loadContent($winlet);
 		WinletJSEngine.updateWindows($winlet, update);
+
+		return false;
 	},
 
-	_url : function(wid, action) {
-		var $winlet = WinletJSEngine.getWinlet(wid);
+	_url : function(element, action) {
+		var $winlet = WinletJSEngine.getWinlet(element);
+		if ($winlet == null)
+			return null;
+
 		var params = {};
 
 		for (var i = 2; i < arguments.length; i++)
-			$.extend(params, win$.getParams(arguments[i], wid));
+			$.extend(params, win$.getParams(arguments[i], $winlet));
 
 		return WinletJSEngine.getWinletUrl($winlet) + "?"
 				+ WinletJSEngine.mergeParam($winlet, params, {
 					_x : 'y',
-					_w : wid,
 					_a : action,
 					_pg : window.location.pathname,
 					_purl : window.location.href
@@ -1820,14 +1846,18 @@ var win$ = {
 
 	reAction : new RegExp('^(.*)!(.*)$'),
 
-	_submit : function(wid, form, action) {
-		var f = $('form[name="' + form + wid + '"]');
+	_submit : function(element, form, action) {
+		var $winlet = WinletJSEngine.getWinlet(element);
+		if ($winlet == null)
+			return false;
+
+		var f = $winlet.find('form[name="' + form + '"]');
 		if (f.length != 1)
-			return;
+			return false;
 
 		if (action != null && action != '') {
 			if (!f.attr('action').match(win$.reAction))
-				return;
+				return false;
 			f.attr('action', f.attr('action').replace(win$.reAction,
 					"$1!" + action));
 		}
@@ -1837,7 +1867,7 @@ var win$ = {
 			if (arguments[i] == null)
 				continue;
 
-			$.extend(params, win$.getParams(arguments[i], wid));
+			$.extend(params, win$.getParams(arguments[i], $winlet));
 		}
 
 		for ( var key in params) {
@@ -1845,12 +1875,18 @@ var win$ = {
 		}
 
 		f.submit();
+		
+		return false;
 	},
 
-	_aftersubmit : function(wid, form) {
-		var f = $('form[name="' + form + wid + '"]');
+	_aftersubmit : function(element, form) {
+		var $winlet = WinletJSEngine.getWinlet(element);
+		if ($winlet == null)
+			return false;
+
+		var f = $winlet.find('form[name="' + form + '"]');
 		if (f.length != 1)
-			return;
+			return false;
 
 		var funcs = [];
 		for (var i = 2; i < arguments.length; i++) {
@@ -1862,6 +1898,8 @@ var win$ = {
 		}
 
 		f[0].aftersubmit = funcs;
+		
+		return false;
 	},
 
 	/**

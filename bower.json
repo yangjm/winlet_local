@@ -1,6 +1,6 @@
 {
   "name": "winlet_local",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Client side Javascript engine for winlet applications running on local server",
   "main": "dist/winlet_local_bootstrap.js",
   "ignore": [
