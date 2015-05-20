@@ -392,7 +392,7 @@ jQuery.fn.winform = function() {
 							return false;
 						}
 
-					var $winlet = WinletJSEngine.getWinlet(this);
+					var $winlet = settings.winlet;
 					if ($winlet == null || $winlet.length == 0)
 						return false;
 
@@ -465,7 +465,7 @@ jQuery.fn.winform = function() {
 					if (name == undefined)
 						name = input.name;
 
-					var $winlet = WinletJSEngine.getWinlet(this);
+					var $winlet = settings.winlet;
 
 					WinletJSEngine.form.validating(input);
 
@@ -826,6 +826,15 @@ var WinletJSEngine = {
 			}
 		}
 		return string;
+	},
+
+	getForm: function($winlet, name) {
+		var f = $winlet.find('form[name="' + name + '"]');
+		if (f != null && f.length > 0)
+			return f;
+		if ($winlet[0].dlg != null)
+			f = $winlet[0].dlg.find('form[name="' + name + '"]');
+		return f;
 	},
 
 	getWinlet : function(element) {
@@ -1285,14 +1294,15 @@ var WinletJSEngine = {
 		}
 	},
 
-	enableForm : function(container) {
-		container.find("form[data-winlet-form]").each(function() {
+	enableForm : function($winlet) {
+		$winlet.find("form[data-winlet-form]").each(function() {
 			var form = $(this);
 			form.winform({
-				focus : form.attr("data-winlet-focus"),
-				update : form.attr("data-winlet-update"),
-				validate : form.attr("data-winlet-validate"),
-				hideloading : form.attr("data-winlet-hideloading")
+				winlet: $winlet,
+				focus: form.attr("data-winlet-focus"),
+				update: form.attr("data-winlet-update"),
+				validate: form.attr("data-winlet-validate"),
+				hideloading: form.attr("data-winlet-hideloading")
 			});
 		});
 	},
@@ -1667,7 +1677,7 @@ var win$ = {
 					return $.deparam(params);
 				else
 					// params为form name
-					params = $winlet.find('form[name="' + params + '"]');
+					params = WinletJSEngine.getForm($winlet, params);
 			}
 
 			if (params.is('form'))
@@ -1851,7 +1861,7 @@ var win$ = {
 		if ($winlet == null)
 			return false;
 
-		var f = $winlet.find('form[name="' + form + '"]');
+		var f = WinletJSEngine.getForm($winlet, form);
 		if (f.length != 1)
 			return false;
 
@@ -1884,7 +1894,7 @@ var win$ = {
 		if ($winlet == null)
 			return false;
 
-		var f = $winlet.find('form[name="' + form + '"]');
+		var f = WinletJSEngine.getForm($winlet, form);
 		if (f.length != 1)
 			return false;
 

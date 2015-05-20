@@ -2,14 +2,13 @@ WinletJSEngine.getDialog = function($winlet, createIfNotExist) {
 	if ($winlet == null || $winlet.length != 1)
 		return null;
 
-	var dlg = $winlet.find('div[data-winlet-dialog="yes"]');
-	if (dlg.length == 0 || WinletJSEngine.getWinlet(dlg[0])[0] != $winlet[0]) {
+	if ($winlet[0].dlg == null) {
 		if (!createIfNotExist)
 			return null;
 
-		dlg = $('<div class="modal fade" data-winlet-dialog="yes" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><h4 class="modal-title">&nbsp;</h4></div><div class="modal-body">Body</div><div class="modal-footer">&nbsp;</div></div></div></div>');
-		$winlet.append(dlg);
-		dlg.on('show.bs.modal', function() {
+		$winlet[0].dlg = $('<div class="modal fade" data-winlet-dialog="yes" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><h4 class="modal-title">&nbsp;</h4></div><div class="modal-body">Body</div><div class="modal-footer">&nbsp;</div></div></div></div>');
+		$(document.body).append($winlet[0].dlg);
+		$winlet[0].dlg.on('show.bs.modal', function() {
 		    $(this).css('display', 'block');
 		    var $dialog = $(this).find(".modal-dialog");
 		    var offset = ($(window).height() - $dialog.height()) / 3;
@@ -18,7 +17,7 @@ WinletJSEngine.getDialog = function($winlet, createIfNotExist) {
 		});
 	}
 	
-	return dlg;
+	return $winlet[0].dlg;
 }
 
 /**
@@ -95,6 +94,7 @@ WinletJSEngine.openDialog = function($winlet, content, title) {
 		body.find("form[data-winlet-form]").each(function() {
 			var form = $(this);
 			form.winform({
+				winlet: $winlet,
 				focus: form.attr("data-winlet-focus"),
 				update: form.attr("data-winlet-update"),
 				validate: form.attr("data-winlet-validate"),
