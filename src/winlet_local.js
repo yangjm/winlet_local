@@ -1901,7 +1901,7 @@ var win$ = {
 				});
 	},
 
-	reAction : new RegExp('^(.*)!(.*)$'),
+	reAction : new RegExp('^(.*)\\?_a=(.*)$'),
 
 	_submit : function(element, form, action) {
 		var $winlet = WinletJSEngine.getWinlet(element);
@@ -1924,7 +1924,7 @@ var win$ = {
 			if (!f.attr('action').match(win$.reAction))
 				return false;
 			f.attr('action', f.attr('action').replace(win$.reAction,
-					"$1!" + action));
+					"$1?_a=" + action));
 		}
 
 		var params = {};
