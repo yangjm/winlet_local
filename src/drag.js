@@ -291,6 +291,8 @@ var WinletDrag = {
 		if (WinletDrag.m_elmDropIndicate != null)
 			WinletDrag.m_elmDropIndicate.remove();
 
+		var defer = $.Deferred();
+
 		if (WinletDrag.m_elmContent != null) {
 			$(WinletDrag.m_elmContent).css('opacity', 1.0);
 			
@@ -308,6 +310,10 @@ var WinletDrag = {
 						$(location.content).after(WinletDrag.m_elmContent);
 				}
 
+				defer.done(function() {
+					$(location.area).trigger("dragged", WinletDrag.m_elmContent, location);
+				});
+
 				WinletDrag.getConfig().dragged(WinletDrag.m_elmContent, location);
 			} else
 				WinletDrag.getConfig().dragEnd(WinletDrag.m_elmContent, location);
@@ -319,15 +325,27 @@ var WinletDrag = {
 			WinletDrag.m_elmMove.remove();;
 			WinletDrag.m_elmMove = null;
 		}
+		
+		defer.resolve();
+	},
+	
+	documentEventBounded: false,
+
+	init: function($container) {
+		var t = $container.find(".winletdrag_drag");
+		t.css("cursor", "move");
+		t.off("mousedown").on("mousedown", WinletDrag.doMouseDown);
+
+		if (!WinletDrag.documentEventBounded) {
+			$(document).mousemove(WinletDrag.doMouseMove);
+			$(document).mouseup(WinletDrag.doMouseUp);
+			WinletDrag.documentEventBounded = true;
+		}
 	}
 }
 
 $(document).on("WinletWindowLoaded", function(event) {
-	var t = $(event.target).find(".winletdrag_drag");
-	t.css("cursor", "move");
-	t.mousedown(WinletDrag.doMouseDown);
-	$(document).mousemove(WinletDrag.doMouseMove);
-	$(document).mouseup(WinletDrag.doMouseUp);
+	WinletDrag.init($(event.target));
 });
 
 /**

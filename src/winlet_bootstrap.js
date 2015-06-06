@@ -48,13 +48,16 @@ WinletJSEngine.closeDialog = function($winlet) {
 	return d;
 };
 
-WinletJSEngine.openDialog = function($winlet, content, title) {
+WinletJSEngine.openDialog = function($winlet, $container, content, title) {
+	if ($container == null)
+		$container = $winlet;
+
 	var dlg = WinletJSEngine.getDialog($winlet, true);
 
 	var body = dlg.find("div.modal-body"); 
 	var html = $.trim(WinletJSEngine.procStyle(WinletJSEngine.procWinFunc(
 			content.replace(WinletJSEngine.reScriptAll, '')
-			.replace(WinletJSEngine.reDialogSetting, ''), $winlet)));
+			.replace(WinletJSEngine.reDialogSetting, ''), $container)));
 
 	if (html == '') {
 		WinletJSEngine.closeDialog($winlet);
@@ -65,7 +68,7 @@ WinletJSEngine.openDialog = function($winlet, content, title) {
 
 	var settings = WinletJSEngine.reDialogSetting.exec(content);
 	if (settings != null) {
-		settings = JSON.parse(WinletJSEngine.procWinFunc(settings[1], $winlet));
+		settings = JSON.parse(WinletJSEngine.procWinFunc(settings[1], $container));
 		dlg.find("h4.modal-title").empty().append(settings.title);
 		
 		if (settings.width && settings.width != '')
@@ -94,7 +97,6 @@ WinletJSEngine.openDialog = function($winlet, content, title) {
 		body.find("form[data-winlet-form]").each(function() {
 			var form = $(this);
 			form.winform({
-				winlet: $winlet,
 				focus: form.attr("data-winlet-focus"),
 				update: form.attr("data-winlet-update"),
 				validate: form.attr("data-winlet-validate"),
@@ -105,7 +107,7 @@ WinletJSEngine.openDialog = function($winlet, content, title) {
 				focus = form.find('input[name="' + form.attr("data-winlet-focus") + '"]');
 		});
 
-		WinletJSEngine.procScript(content, $winlet);
+		WinletJSEngine.procScript(content, $container);
 
 		if (focus) {
 			dlg.off('shown.bs.modal').on('shown.bs.modal', function () {
