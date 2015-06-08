@@ -1328,6 +1328,9 @@ var WinletJSEngine = {
 	},
 
 	enableForm : function($winlet, $container) {
+		if ($container == null)
+			$container = $winlet;
+
 		$container.find("form[data-winlet-form]").each(function() {
 			var form = $(this);
 			var settings = {
@@ -1336,7 +1339,7 @@ var WinletJSEngine = {
 				validate: form.attr("data-winlet-validate"),
 				hideloading: form.attr("data-winlet-hideloading"),
 				winlet: $winlet,
-				container: ($container == null ? $winlet : $container)
+				container: $container
 			};
 
 			form.winform(settings);
