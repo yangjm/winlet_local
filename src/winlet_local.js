@@ -392,10 +392,10 @@ jQuery.fn.winform = function() {
 							return false;
 						}
 
-					var $winlet = WinletJSEngine.getWinlet(this);
+					var $winlet = settings.winlet;
 					if ($winlet == null || $winlet.length == 0)
 						return false;
-					var $container = WinletJSEngine.getContainer(this);
+					var $container = settings.container;
 
 					if ($(this).attr("enctype") == "multipart/form-data") {
 						this.action = this.action + "&"
@@ -467,10 +467,10 @@ jQuery.fn.winform = function() {
 					if (name == undefined)
 						name = input.name;
 
-					var $winlet = WinletJSEngine.getWinlet(this);
+					var $winlet = settings.winlet;
 					if ($winlet == null || $winlet.length == 0)
 						return;
-					var $container = WinletJSEngine.getContainer(this);
+					var $container = settings.container;
 
 					WinletJSEngine.form.validating(input);
 
@@ -1327,14 +1327,16 @@ var WinletJSEngine = {
 		}
 	},
 
-	enableForm : function($container) {
+	enableForm : function($winlet, $container) {
 		$container.find("form[data-winlet-form]").each(function() {
 			var form = $(this);
 			var settings = {
 				focus: form.attr("data-winlet-focus"),
 				update: form.attr("data-winlet-update"),
 				validate: form.attr("data-winlet-validate"),
-				hideloading: form.attr("data-winlet-hideloading")
+				hideloading: form.attr("data-winlet-hideloading"),
+				winlet: $winlet,
+				container: ($container == null ? $winlet : $container)
 			};
 
 			form.winform(settings);
@@ -1389,7 +1391,7 @@ var WinletJSEngine = {
 						.procWinFunc(data.replace(WinletJSEngine.reScriptAll,
 						''), $container, null)));
 				$(function() {
-					WinletJSEngine.enableForm($container);
+					WinletJSEngine.enableForm($winlet, $container);
 					WinletJSEngine.updateHref($container);
 				});
 

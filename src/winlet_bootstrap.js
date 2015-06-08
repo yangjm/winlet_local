@@ -101,6 +101,8 @@ WinletJSEngine.openDialog = function($winlet, $container, content, title) {
 				update: form.attr("data-winlet-update"),
 				validate: form.attr("data-winlet-validate"),
 				hideloading: form.attr("data-winlet-hideloading"),
+				winlet: $winlet,
+				container: $container,
 				dialog: dlg});
 
 			if (form.attr("data-winlet-focus"))
