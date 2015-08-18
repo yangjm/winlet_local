@@ -1,4 +1,5 @@
-WinletJSEngine.getDialog = function($winlet, createIfNotExist) {
+WinletJSEngine.getDialog = function($container, createIfNotExist) {
+	var $winlet = WinletJSEngine.traceToWinlet($container);
 	if ($winlet == null || $winlet.length != 1)
 		return null;
 
@@ -24,10 +25,10 @@ WinletJSEngine.getDialog = function($winlet, createIfNotExist) {
  * 返回deferred对象，resolve了表示对话框完成关闭。
  * 如果在完成对话框关闭前把对话框从dom中去除，会导致对话框关闭不完整，挡住页面的背景div不会被正常清除
  */
-WinletJSEngine.closeDialog = function($winlet) {
+WinletJSEngine.closeDialog = function($container) {
 	var d = $.Deferred();
 
-	var dlg = WinletJSEngine.getDialog($winlet, false);
+	var dlg = WinletJSEngine.getDialog($container, false);
 	if (dlg == null) {
 		d.resolve();
 		return d;
@@ -48,11 +49,8 @@ WinletJSEngine.closeDialog = function($winlet) {
 	return d;
 };
 
-WinletJSEngine.openDialog = function($winlet, $container, content, title) {
-	if ($container == null)
-		$container = $winlet;
-
-	var dlg = WinletJSEngine.getDialog($winlet, true);
+WinletJSEngine.openDialog = function($container, content, title) {
+	var dlg = WinletJSEngine.getDialog($container, true);
 
 	var body = dlg.find("div.modal-body"); 
 	var html = $.trim(WinletJSEngine.procStyle(WinletJSEngine.procWinFunc(
@@ -60,11 +58,14 @@ WinletJSEngine.openDialog = function($winlet, $container, content, title) {
 			.replace(WinletJSEngine.reDialogSetting, ''), $container)));
 
 	if (html == '') {
-		WinletJSEngine.closeDialog($winlet);
+		WinletJSEngine.closeDialog($container);
 		return;
 	}
 
-	body.empty().append(html);
+	// 在对话框中添加一个容器窗口，如果对话框中包含子窗口的话，子窗口可以根据DOM关系寻找到这个容器窗口，然后
+	// 沿着容器窗口的data-wnlet-src-id找到触发对话框的窗口，这样子窗口中执行post()等方法时可以获得完整
+	// 的容器参数。对话框中的form也可以根据DOM关系找到容器窗口，然后找到触发对话框的窗口
+	body.empty().append('<div data-winlet-src-id="' + $container.data("winlet-id") + '">' + html + '<div>');
 
 	var settings = WinletJSEngine.reDialogSetting.exec(content);
 	if (settings != null) {
@@ -94,15 +95,18 @@ WinletJSEngine.openDialog = function($winlet, $container, content, title) {
 	$(function() {
 		var focus = null;
 
+		// 修改以下逻辑时请注意与winlet_local中的enableForm一致
 		body.find("form[data-winlet-form]").each(function() {
 			var form = $(this);
+			// 对话框中的form如果是在对话框内容里的子窗口中，则$containing不为空。
+			var $containing = WinletJSEngine.getContainer(form);
+
 			form.winform({
 				focus: form.attr("data-winlet-focus"),
 				update: form.attr("data-winlet-update"),
 				validate: form.attr("data-winlet-validate"),
 				hideloading: form.attr("data-winlet-hideloading"),
-				winlet: $winlet,
-				container: $container,
+				container: $containing == null ? $container : $containing,
 				dialog: dlg});
 
 			if (form.attr("data-winlet-focus"))
@@ -123,10 +127,35 @@ WinletJSEngine.openDialog = function($winlet, $container, content, title) {
 };
 
 
+WinletJSEngine.form.validateClearAll = function(form) {
+	if (!(form instanceof jQuery))
+		form = $(form);
+	form.find("span.validate_result").each(function() {
+		var result = $(this);
+		result.html('');
+		var parents = result.closest("div.form-group, .winlet-input-group");
+		if (parents.length > 0)
+			$(parents[0]).removeClass("has-error").removeClass("has-success");
+	});
+};
+
+WinletJSEngine.form.validateClear = function() {
+	for (var i = 0; i < arguments.length; i++) {
+		var result = WinletJSEngine.form.getInputResult(arguments[i]);
+		if (result != null) {
+			result.html('');
+			var parents = result.closest("div.form-group, .winlet-input-group");
+			if (parents.length > 0)
+				$(parents[0]).removeClass("has-error").removeClass("has-success");
+		}
+	}
+};
+
 WinletJSEngine.form.validateSuccess = function(input) {
 	var result = WinletJSEngine.form.getInputResult(input);
 	if (result != null) {
-		var parents = result.parents("div.form-group");
+		result.html('');
+		var parents = result.closest("div.form-group, .winlet-input-group");
 		if (parents.length > 0)
 			$(parents[0]).removeClass("has-error").addClass("has-success");
 	}
@@ -139,9 +168,10 @@ WinletJSEngine.form.validateError = function() {
 
 		var result = WinletJSEngine.form.getInputResult(input);
 		if (result != null) {
-			var parents = result.parents("div.form-group");
+			var parents = result.closest("div.form-group, .winlet-input-group");
 			if (parents.length > 0)
 				$(parents[0]).removeClass("has-success").addClass("has-error");
 		}
+		return true;
 	};
 }();
