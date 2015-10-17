@@ -1,5 +1,5 @@
-WinletJSEngine.getDialog = function($container, createIfNotExist) {
-	var $winlet = WinletJSEngine.traceToWinlet($container);
+win$.engine.getDialog = function($container, createIfNotExist) {
+	var $winlet = win$.engine.traceToWinlet($container);
 	if ($winlet == null || $winlet.length != 1)
 		return null;
 
@@ -25,10 +25,10 @@ WinletJSEngine.getDialog = function($container, createIfNotExist) {
  * 返回deferred对象，resolve了表示对话框完成关闭。
  * 如果在完成对话框关闭前把对话框从dom中去除，会导致对话框关闭不完整，挡住页面的背景div不会被正常清除
  */
-WinletJSEngine.closeDialog = function($container) {
+win$.engine.closeDialog = function($container) {
 	var d = $.Deferred();
 
-	var dlg = WinletJSEngine.getDialog($container, false);
+	var dlg = win$.engine.getDialog($container, false);
 	if (dlg == null) {
 		d.resolve();
 		return d;
@@ -49,16 +49,16 @@ WinletJSEngine.closeDialog = function($container) {
 	return d;
 };
 
-WinletJSEngine.openDialog = function($container, content, title) {
-	var dlg = WinletJSEngine.getDialog($container, true);
+win$.engine.openDialog = function($container, content, title) {
+	var dlg = win$.engine.getDialog($container, true);
 
 	var body = dlg.find("div.modal-body"); 
-	var html = $.trim(WinletJSEngine.procStyle(WinletJSEngine.procWinFunc(
-			content.replace(WinletJSEngine.reScriptAll, '')
-			.replace(WinletJSEngine.reDialogSetting, ''), $container)));
+	var html = $.trim(win$.engine.procStyle(win$.engine.procWinFunc(
+			content.replace(win$.engine.reScriptAll, '')
+			.replace(win$.engine.reDialogSetting, ''), $container)));
 
 	if (html == '') {
-		WinletJSEngine.closeDialog($container);
+		win$.engine.closeDialog($container);
 		return;
 	}
 
@@ -67,14 +67,29 @@ WinletJSEngine.openDialog = function($container, content, title) {
 	// 的容器参数。对话框中的form也可以根据DOM关系找到容器窗口，然后找到触发对话框的窗口
 	body.empty().append('<div data-winlet-src-id="' + $container.data("winlet-id") + '">' + html + '<div>');
 
-	var settings = WinletJSEngine.reDialogSetting.exec(content);
+	var settings = win$.engine.reDialogSetting.exec(content);
 	if (settings != null) {
-		settings = JSON.parse(WinletJSEngine.procWinFunc(settings[1], $container));
+		settings = JSON.parse(win$.engine.procWinFunc(settings[1], $container));
 		dlg.find("h4.modal-title").empty().append(settings.title);
 		
 		if (settings.width && settings.width != '')
 			dlg.find('.modal-dialog').css("width", settings.width);
-		else
+		else if (settings.maxwidth && settings.maxwidth != '') {
+			try {
+				var maxwidth = parseInt(settings.maxwidth);
+				var padding = 0;
+				var width = win$.engine.getViewport().width;
+
+				if (settings.padding && settings.padding != '')
+					padding = parseInt(settings.padding);
+				if (width > maxwidth + padding * 2)
+					dlg.find('.modal-dialog').css("width", Math.round(maxwidth / width * 100) + "%");
+				else
+					dlg.find('.modal-dialog').css("width", "");
+			} catch (e) {
+				console.log(e);
+			}
+		} else
 			dlg.find('.modal-dialog').css("width", "");
 
 		var footer = dlg.find("div.modal-footer").empty();
@@ -99,7 +114,7 @@ WinletJSEngine.openDialog = function($container, content, title) {
 		body.find("form[data-winlet-form]").each(function() {
 			var form = $(this);
 			// 对话框中的form如果是在对话框内容里的子窗口中，则$containing不为空。
-			var $containing = WinletJSEngine.getContainer(form);
+			var $containing = win$.engine.getContainer(form);
 
 			form.winform({
 				focus: form.attr("data-winlet-focus"),
@@ -113,7 +128,8 @@ WinletJSEngine.openDialog = function($container, content, title) {
 				focus = form.find('input[name="' + form.attr("data-winlet-focus") + '"]');
 		});
 
-		WinletJSEngine.procScript(content, $container);
+		win$.engine.procScript(content, $container);
+		win$.engine.invokeAfterLoad(body);
 
 		if (focus) {
 			dlg.off('shown.bs.modal').on('shown.bs.modal', function () {
@@ -127,7 +143,7 @@ WinletJSEngine.openDialog = function($container, content, title) {
 };
 
 
-WinletJSEngine.form.validateClearAll = function(form) {
+win$.engine.form.validateClearAll = function(form) {
 	if (!(form instanceof jQuery))
 		form = $(form);
 	form.find("span.validate_result").each(function() {
@@ -139,9 +155,9 @@ WinletJSEngine.form.validateClearAll = function(form) {
 	});
 };
 
-WinletJSEngine.form.validateClear = function() {
+win$.engine.form.validateClear = function() {
 	for (var i = 0; i < arguments.length; i++) {
-		var result = WinletJSEngine.form.getInputResult(arguments[i]);
+		var result = win$.engine.form.getInputResult(arguments[i]);
 		if (result != null) {
 			result.html('');
 			var parents = result.closest("div.form-group, .winlet-input-group");
@@ -151,8 +167,8 @@ WinletJSEngine.form.validateClear = function() {
 	}
 };
 
-WinletJSEngine.form.validateSuccess = function(input) {
-	var result = WinletJSEngine.form.getInputResult(input);
+win$.engine.form.validateSuccess = function(input) {
+	var result = win$.engine.form.getInputResult(input);
 	if (result != null) {
 		result.html('');
 		var parents = result.closest("div.form-group, .winlet-input-group");
@@ -161,12 +177,12 @@ WinletJSEngine.form.validateSuccess = function(input) {
 	}
 };
 
-WinletJSEngine.form.validateError = function() {
-	var original = WinletJSEngine.form.validateError;
+win$.engine.form.validateError = function() {
+	var original = win$.engine.form.validateError;
 	return function(input, msg) {
 		original(input, msg);
 
-		var result = WinletJSEngine.form.getInputResult(input);
+		var result = win$.engine.form.getInputResult(input);
 		if (result != null) {
 			var parents = result.closest("div.form-group, .winlet-input-group");
 			if (parents.length > 0)

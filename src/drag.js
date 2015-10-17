@@ -310,8 +310,9 @@ var WinletDrag = {
 						$(location.content).after(WinletDrag.m_elmContent);
 				}
 
+				var content = WinletDrag.m_elmContent;
 				defer.done(function() {
-					$(location.area).trigger("dragged", WinletDrag.m_elmContent, location);
+					$(location.area).trigger("dragged", [content, location]);
 				});
 
 				WinletDrag.getConfig().dragged(WinletDrag.m_elmContent, location);
