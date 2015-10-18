@@ -11,3 +11,6 @@ bower install winlet_local
 ```
 
 如果不使用Bower，也可以直接从github clone本项目。
+
+# 文档
+请见[Winlet 框架文档](http://www.aggrepoint.com)
