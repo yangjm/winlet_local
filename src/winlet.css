@@ -5,3 +5,6 @@
 .winlet_background {background-image:url(gray.png)}
 .winlet_loading {background-image:url(loading.gif)}
 .winlet_validating {background-image:url(hourglass.gif)}
+
+.winlet_debug_view {border: 1px dashed red; margin: 5px}
+.winlet_debug_view_title {background-color: #752222; color: white; padding: 3px; margin-bottom: 0px}
