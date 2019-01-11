@@ -896,6 +896,14 @@ window.win$ = function($) {
 		getHashGroup: function($container) {
 			try {
 				var url = WinletJSEngine.getWinletRoot($container);
+
+				// 如果子窗口的winletRoot和父窗口的winletRoot相同，则用父窗口的设置
+				var $parent = $container.parent().closest("div[data-winlet-url]");
+				while($parent.length > 0 && WinletJSEngine.getWinletRoot($parent) == url) {
+					$container = $parent;
+					$parent = $container.parent().closest("div[data-winlet-url]");
+				}
+
 				var ext = $container.closest("[data-winlet-hashgroup-ext]");
 				if (ext.length == 1) {
 					ext = ext.attr("data-winlet-hashgroup-ext");
