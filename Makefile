@@ -35,7 +35,7 @@ link: build ## Build and register global npm link
 	@echo ""
 	@echo "After changing code in this project, rebuild to update dist/:"
 	@echo "  make build       (one-time)"
-	@echo "  make dev         (watch mode)"
+	@echo "  make dev         (watch mode, auto-rebuilds on save so the other project picks up changes immediately)"
 	@echo ""
 	@echo "In another project:"
 	@echo "  npm link winlet-local"
