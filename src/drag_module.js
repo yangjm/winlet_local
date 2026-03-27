@@ -102,7 +102,7 @@ var WinletDrag = {
 				else if (window.getSelection().removeAllRanges)
 					window.getSelection().removeAllRanges();
 			}
-		} catch (e) {}
+		} catch {}
 	},
 
 	newRect: function(top, left, bottom, right) {

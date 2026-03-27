@@ -25,9 +25,9 @@ export function winform(formEl, settings) {
 		} else {
 			form.winletAction = formEl.getAttribute("action");
 		}
-	} catch (e) {}
+	} catch {}
 
-	form.winsubmit = function(state) {
+	form.winsubmit = function(_state) {
 		var dfd = form.windeferred;
 		form.windeferred = null;
 		if (dfd == null)
@@ -39,7 +39,7 @@ export function winform(formEl, settings) {
 					dfd.reject();
 					return false;
 				}
-			} catch (e) {
+			} catch {
 				dfd.reject();
 				return false;
 			}
@@ -101,7 +101,7 @@ export function winform(formEl, settings) {
 		try {
 			if (settings.hideloading != 'yes')
 				WinletJSEngine.showLoading(target, settings.dialog);
-		} catch (e) {}
+		} catch {}
 
 		var disabled = [];
 		var disabledInputs = formEl.querySelectorAll(":is(input, select, textarea):disabled");
@@ -206,7 +206,7 @@ export function winform(formEl, settings) {
 	if (settings.focus) {
 		var inp = formEl.querySelector(':is(input, textarea)[name="' + settings.focus + '"]');
 		if (inp) {
-			try { inp.select(); } catch(e) {}
+			try { inp.select(); } catch {}
 			inp.focus();
 		}
 	}

@@ -47,7 +47,7 @@ export default [
       },
     },
     rules: {
-      "no-unused-vars": "warn",
+      "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
       "no-undef": "error",
       "eqeqeq": "off",
       "no-eval": "off",

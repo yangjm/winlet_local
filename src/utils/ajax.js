@@ -41,7 +41,7 @@ export function ajax(options) {
 			var parseResponse;
 			if (options.dataType === "json") {
 				parseResponse = response.text().then(function(text) {
-					try { return JSON.parse(text); } catch(e) { return text; }
+					try { return JSON.parse(text); } catch { return text; }
 				});
 			} else {
 				parseResponse = response.text();

@@ -2,7 +2,7 @@ import { deparam } from './utils/deparam.js';
 import { param } from './utils/param.js';
 import { ajax } from './utils/ajax.js';
 import { Deferred, whenAll } from './utils/deferred.js';
-import { qs, qsa, offset, serializeForm, domReady } from './utils/dom.js';
+import { qs, qsa, domReady } from './utils/dom.js';
 
 function ElmRect(el) {
 	if (el == null) return null;
@@ -129,7 +129,7 @@ var WinletJSEngine = {
 			}
 		},
 
-		validating: function(input) {},
+		validating: function(_input) {},
 
 		validateSuccess: function(input) {
 			var result = WinletJSEngine.form.getInputResult(input);
@@ -153,7 +153,7 @@ var WinletJSEngine = {
 			var changes = null;
 			try {
 				changes = eval(json);
-			} catch (e) {}
+			} catch {}
 
 			if (changes != null) {
 				var errors = [];
@@ -221,7 +221,7 @@ var WinletJSEngine = {
 					try {
 						errors[0].select();
 						errors[0].focus();
-					} catch(e) {}
+					} catch {}
 				}
 			}
 		},
@@ -232,7 +232,7 @@ var WinletJSEngine = {
 				WinletJSEngine.form.applyChanges(json, form, input);
 
 				if (form.onerror != undefined && input != undefined) {
-					try { form.onerror(input); } catch (e) {}
+					try { form.onerror(input); } catch {}
 				}
 			};
 		},
@@ -300,7 +300,7 @@ var WinletJSEngine = {
 					sessionStorage.setItem("winlet_test", 1);
 					sessionStorage.removeItem("winlet_test");
 					WinletJSEngine.useSessionStorage = true;
-				} catch (e) {}
+				} catch {}
 			}
 		}
 		return WinletJSEngine.useSessionStorage;
@@ -428,7 +428,7 @@ var WinletJSEngine = {
 			if (WinletJSEngine.winletRootMap[url] == null)
 				WinletJSEngine.winletRootMap[url] = url.match(WinletJSEngine.reWinlet)[2];
 			return WinletJSEngine.winletRootMap[url];
-		} catch (e) {
+		} catch {
 			return null;
 		}
 	},
@@ -445,7 +445,7 @@ var WinletJSEngine = {
 					WinletJSEngine.contextRootMap[url] = WinletJSEngine.contextRootMap[url] + "/";
 			}
 			return WinletJSEngine.contextRootMap[url];
-		} catch (e) {
+		} catch {
 			return null;
 		}
 	},
@@ -482,7 +482,7 @@ var WinletJSEngine = {
 				}
 			}
 			return WinletJSEngine.hashGroupMap[url];
-		} catch (e) {
+		} catch {
 			return null;
 		}
 	},
@@ -546,7 +546,7 @@ var WinletJSEngine = {
 				return ret;
 			} else
 				return params[hashgroup];
-		} catch (e) {}
+		} catch {}
 		return null;
 	},
 
@@ -559,7 +559,7 @@ var WinletJSEngine = {
 			if (h.indexOf("!") == 0)
 				h = h.substring(1);
 			params = deparam(h);
-		} catch (e) {}
+		} catch {}
 
 		if (!(params instanceof Object))
 			params = {};
@@ -653,7 +653,7 @@ var WinletJSEngine = {
 
 		try {
 			Object.assign(obj, WinletJSEngine.getHash(container));
-		} catch (e) {}
+		} catch {}
 
 		for (var i = 1; i < arguments.length; i++) {
 			if (arguments[i] != null)
@@ -736,7 +736,7 @@ var WinletJSEngine = {
 			if (scrollX != 0 || scrollY != 0) {
 				window.scrollBy({ top: scrollY, left: scrollX, behavior: 'smooth' });
 			}
-		} catch (e) {}
+		} catch {}
 	},
 
 	clearLoading: function(container) {
@@ -745,7 +745,7 @@ var WinletJSEngine = {
 				container.loading.remove();
 				container.loading = null;
 			}
-		} catch (e) {}
+		} catch {}
 	},
 
 	showLoading: function(container, dialog, nodelay) {
@@ -756,7 +756,7 @@ var WinletJSEngine = {
 			try {
 				if (dialog != null)
 					rect = new ElmRect(dialog);
-			} catch (e) {}
+			} catch {}
 
 			if (WinletJSEngine.ImgLoading.src != null && WinletJSEngine.ImgLoading.src != '' && WinletJSEngine.ImgBg.src != null && WinletJSEngine.ImgBg.src != '') {
 				var loadDiv = document.createElement("div");
@@ -774,7 +774,7 @@ var WinletJSEngine = {
 					}, 2000);
 				}
 			}
-		} catch (e) {}
+		} catch {}
 	},
 
 	procStyle: function(cont) {
@@ -908,7 +908,7 @@ var WinletJSEngine = {
 
 	invokeAfterLoad: function(container) {
 		if (WinletJSEngine.afterLoad) {
-			try { WinletJSEngine.afterLoad(container); } catch (e) {}
+			try { WinletJSEngine.afterLoad(container); } catch {}
 		}
 	},
 
@@ -955,7 +955,7 @@ var WinletJSEngine = {
 			else {
 				try {
 					a.setAttribute("href", eval(href));
-				} catch (e) {}
+				} catch {}
 			}
 		});
 	},
@@ -1148,7 +1148,7 @@ var WinletJSEngine = {
 				qsa('div[data-winlet-url^="' + ud + '"]').forEach(function(el) {
 					dfds.push(WinletJSEngine.loadContent(el, focusUpdate && !nofocus));
 				});
-			} catch (e) {}
+			} catch {}
 		}
 
 		return whenAll(dfds);
@@ -1194,7 +1194,7 @@ var WinletJSEngine = {
 				WinletJSEngine.form.applyChanges(data.substr(17), form);
 
 				if (form.onerror != undefined) {
-					try { form.onerror(null); } catch (e) {}
+					try { form.onerror(null); } catch {}
 				}
 				return dfd.resolve().promise();
 			}
@@ -1247,8 +1247,8 @@ var WinletJSEngine = {
 		};
 	},
 
-	getErrorHandler: function(container) {
-		return function(req, textStatus, errorThrown) {};
+	getErrorHandler: function(_container) {
+		return function(_req, _textStatus, _errorThrown) {};
 	},
 
 	isInt: function(n) {
@@ -1387,9 +1387,9 @@ var WinletJSEngine = {
 	},
 
 	// Dialog methods - will be overridden by modal.js
-	getDialog: function(container, createIfNotExist) { return null; },
-	openDialog: function(container, content, title) {},
-	closeDialog: function(container) {
+	getDialog: function(_container, _createIfNotExist) { return null; },
+	openDialog: function(_container, _content, _title) {},
+	closeDialog: function(_container) {
 		var dfd = Deferred();
 		dfd.resolve();
 		return dfd.promise();

@@ -4,7 +4,7 @@
  */
 import { createModal, showModal, hideModal, isModalShown } from './modal.js';
 import { Deferred } from './utils/deferred.js';
-import { domReady, qsa } from './utils/dom.js';
+import { domReady } from './utils/dom.js';
 
 export function installDialog(WinletJSEngine, winformFn) {
 
@@ -38,7 +38,7 @@ export function installDialog(WinletJSEngine, winformFn) {
 			} else {
 				dfd.resolve();
 			}
-		} catch (e) {
+		} catch {
 			dfd.resolve();
 		}
 
@@ -160,7 +160,7 @@ export function installDialog(WinletJSEngine, winformFn) {
 			// Show modal, then execute scripts
 			var onShown = function() {
 				if (focusEl) {
-					try { focusEl.select(); } catch(e) {}
+					try { focusEl.select(); } catch {}
 					focusEl.focus();
 				}
 				WinletJSEngine.procScript(content, container);

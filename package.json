@@ -19,9 +19,13 @@
     "dev": "rollup -c --watch",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "test": "echo \"No tests yet\" && exit 0"
+    "test": "vitest run"
   },
-  "keywords": ["winlet", "js", "web"],
+  "keywords": [
+    "winlet",
+    "js",
+    "web"
+  ],
   "author": "Jiangming Yang",
   "license": "MIT",
   "homepage": "https://github.com/yangjm/winlet_local",
@@ -30,10 +34,12 @@
     "url": "git+https://github.com/yangjm/winlet_local.git"
   },
   "devDependencies": {
-    "eslint": "^9.0.0",
-    "rollup": "^4.9.0",
     "@rollup/plugin-terser": "^0.4.4",
+    "eslint": "^9.0.0",
+    "jsdom": "^29.0.1",
+    "rollup": "^4.9.0",
     "rollup-plugin-copy": "^3.5.0",
-    "rollup-plugin-postcss": "^4.0.2"
+    "rollup-plugin-postcss": "^4.0.2",
+    "vitest": "^4.1.2"
   }
 }

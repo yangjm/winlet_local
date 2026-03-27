@@ -9,7 +9,7 @@ import { WinletDrag } from './drag_module.js';
 import { winletMenu, winletContextMenu, winletClickMenu } from './menu.js';
 import { Deferred } from './utils/deferred.js';
 import { ajax } from './utils/ajax.js';
-import { serializeForm, domReady } from './utils/dom.js';
+import { serializeForm } from './utils/dom.js';
 
 // Wire winform into the engine's enableForm
 window._winletWinform = winform;
@@ -66,7 +66,7 @@ var win$ = {
 
 			if (params != null && params instanceof HTMLFormElement)
 				return deparam(serializeForm(params));
-		} catch (e) {}
+		} catch {}
 
 		return params;
 	},
@@ -360,7 +360,7 @@ var win$ = {
 		else {
 			try {
 				f = (form instanceof HTMLElement) ? form.closest("form") : null;
-			} catch (e) {}
+			} catch {}
 		}
 		if (f == null || !f.setAction)
 			return dfd.reject().promise();
