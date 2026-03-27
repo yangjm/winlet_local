@@ -1,12 +1,39 @@
 {
   "name": "winlet-local",
-  "version": "0.1.0",
+  "version": "2.0.0",
+  "description": "Client-side JS engine for Winlet applications",
+  "main": "dist/winlet-local.umd.js",
+  "module": "dist/winlet-local.esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/winlet-local.esm.js",
+      "require": "./dist/winlet-local.umd.js"
+    },
+    "./css": "./dist/winlet-local.min.css"
+  },
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": ["winlet", "js", "web"],
+  "author": "Jiangming Yang",
+  "license": "MIT",
+  "homepage": "https://github.com/yangjm/winlet_local",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yangjm/winlet_local.git"
+  },
   "devDependencies": {
-    "gulp": "^3.8.1",
-    "gulp-uglify": "^0.3.1",
-    "gulp-cssmin": "0.1.6",
-    "gulp-concat": "^2.5.2",
-    "mkdirp": "^0.5.0",
-    "del": "^1.1.1"
+    "eslint": "^9.0.0",
+    "rollup": "^4.9.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-postcss": "^4.0.2"
   }
 }
