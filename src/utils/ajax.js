@@ -60,6 +60,7 @@ export function ajax(options) {
 			});
 		})
 		.catch(function(err) {
+			console.error("[winlet] ajax catch handler caught error:", err);
 			if (options.error) {
 				options.error({}, "error", err.message);
 			}

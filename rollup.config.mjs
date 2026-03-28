@@ -4,6 +4,10 @@ import postcss from 'rollup-plugin-postcss';
 
 export default {
   input: 'src/index.js',
+  onwarn(warning, warn) {
+    if (warning.code === 'EVAL') return;
+    warn(warning);
+  },
   output: [
     {
       file: 'dist/winlet-local.umd.js',

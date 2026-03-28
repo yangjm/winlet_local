@@ -1,7 +1,7 @@
 /**
  * Form initialization - replaces $.fn.winform
  */
-import { WinletJSEngine } from './engine.js';
+import { WinletJSEngine } from './engine/index.js';
 import { deparam } from './utils/deparam.js';
 import { ajax } from './utils/ajax.js';
 import { Deferred, whenAll } from './utils/deferred.js';

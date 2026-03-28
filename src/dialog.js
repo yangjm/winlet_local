@@ -209,9 +209,10 @@ export function installDialog(WinletJSEngine, winformFn) {
 		if (result != null) {
 			result.innerHTML = '';
 			var parent = result.closest("div.form-group, .winlet-input-group");
-			if (parent)
+			if (parent) {
 				parent.classList.remove("has-error");
 				parent.classList.add("has-success");
+			}
 		}
 	};
 

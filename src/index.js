@@ -2,7 +2,7 @@ import './winlet.css';
 import './drag.css';
 import './modal.css';
 
-import { WinletJSEngine, deparam } from './engine.js';
+import { WinletJSEngine, deparam } from './engine/index.js';
 import { installDialog } from './dialog.js';
 import { winform } from './form.js';
 import { WinletDrag } from './drag_module.js';

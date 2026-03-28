@@ -1,4 +1,4 @@
-.PHONY: install lint lint-fix build dev clean dist-clean publish check test link unlink help
+.PHONY: install lint lint-fix build dev clean dist-clean publish check test deploy help
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -28,26 +28,14 @@ clean: ## Remove dist/ and node_modules/
 dist-clean: ## Remove dist/ only
 	rm -rf dist/
 
-link: build ## Build and register global npm link
-	npm link
-	@echo ""
-	@echo "Global link created."
-	@echo ""
-	@echo "After changing code in this project, rebuild to update dist/:"
-	@echo "  make build       (one-time)"
-	@echo "  make dev         (watch mode, auto-rebuilds on save so the other project picks up changes immediately)"
-	@echo ""
-	@echo "In another project:"
-	@echo "  npm link winlet-local"
-	@echo ""
-	@echo "To stop using the link in that project:"
-	@echo "  npm unlink winlet-local && npm install"
-	@echo ""
-	@echo "To remove this global link:"
-	@echo "  make unlink"
+DEMO_DIR ?= ../winlet_demo
+DEMO_TARGETS = $(DEMO_DIR)/demo_1/src/main/webapp/resources/winlet_local \
+               $(DEMO_DIR)/demo_2/src/main/webapp/resources/winlet_local
 
-unlink: ## Remove global npm link
-	npm unlink
+deploy-demo: build ## Build and copy dist/ to demo projects
+	@for t in $(DEMO_TARGETS); do \
+		mkdir -p "$$t" && cp dist/* "$$t"/ && echo "Deployed to $$t"; \
+	done
 
 publish: check ## Lint + test + build then npm publish
 	npm publish
