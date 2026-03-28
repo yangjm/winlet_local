@@ -82,8 +82,8 @@ WinletJSEngine.form = {
 	applyChanges: function(json, form, input) {
 		var changes = null;
 		try {
-			changes = eval(json);
-		} catch (e) { console.error("[winlet] eval failed:", e, "json:", json); }
+			changes = JSON.parse(json);
+		} catch (e) { console.error("[winlet] form changes parse failed:", e, "json:", json); }
 
 		if (changes != null) {
 			var errors = [];
